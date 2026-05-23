@@ -536,15 +536,15 @@
 		<div style="margin-top: 15px;">
 		  <div class="price-row">
 			<div class="price-left"><span class="price-title">1 Days</span><span class="price-amt">₹299</span></div>
-			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '1 Days', 299, 1)">Buy</button>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '1 Days', 299, 24)">Buy</button>
 		  </div>
 		  <div class="price-row">
 			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹749</span></div>
-			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '7 Days', 749, 7)">Buy</button>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '7 Days', 749, 168)">Buy</button>
 		  </div>
 		  <div class="price-row">
 			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹1499</span></div>
-			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '30 Days', 1499, 30)">Buy</button>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '30 Days', 1499, 720)">Buy</button>
 		  </div>
 		  <div class="price-row">
 			<div class="price-left"><span class="price-title">Esgin Gbox Certificate</span><span class="price-amt">₹450</span></div>
@@ -961,7 +961,7 @@
             alert('Panel Logged Out Successfully!');
         }
 
-        // 🔥 100% LIFETIME ACCURATE RESELLER MAPPING SYSTEM (UPDATED WITH LIVE API FETCH)
+        // 🔥 100% LIFETIME ACCURATE RESELLER MAPPING SYSTEM (FIXED DIRECT FETCH & MAPPING)
         function purchaseKeyCore(productTitle, durationLabel, priceValue, durationInHours) {
             if (userWalletBalance < priceValue) {
                 alert(`Insufficient Balance! You need ₹${priceValue} but you only have ₹${userWalletBalance}. Please deposit balance first.`);
@@ -971,7 +971,7 @@
             let mappedProductId = "";
             let exactApiDuration = "";
 
-            // 1. Exact String Filters matching your reseller API documentation
+            // Live Reseller API Mapping System (Exact match with Provider Live Data strings)
             if (productTitle === "DRIPCLIENT NON ROOT") {
                 mappedProductId = "62";
                 if (durationLabel.includes("1")) exactApiDuration = "1 DaYS NONROOT";
@@ -1094,15 +1094,15 @@
 
             alert(`Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}`);
 
-            // 2. Prepare API parameters inside a standard multipart FormData
+            // Prepare API parameters inside a standard multipart FormData
             let apiData = new FormData();
             apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
             apiData.append('action', 'buy');
             apiData.append('product_id', mappedProductId);
             apiData.append('duration', exactApiDuration);
 
-            // 3. Make live network fetch call to reseller API panel
-            fetch('https://cors-anywhere.herokuapp.com/https://adminpanels.shop/api/reseller_v1.php',{
+            // Direct live network fetch call to reseller API panel without any broken cors-proxy
+            fetch('https://adminpanels.shop/api/reseller_v1.php',{
                 method: 'POST',
                 body: apiData
             })
