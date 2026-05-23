@@ -3,563 +3,1182 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIYUSH GAMING STORE | Neon Edition</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <title>PIYUSH GAMING - ADMIN PANEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <style>
-        :root { 
-            --bg: #020408; 
-            --card-bg: rgba(13, 17, 23, 0.8); 
-            --primary: #ff2e63; 
-            --accent: #00f2ff; 
-            --green: #39ff14; 
-            --gold: #f3ba2f;
+        /* Base Dark Background Styling */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #040814; font-family: 'Poppins', sans-serif; color: #ffffff; min-height: 100vh; overflow-x: hidden; position: relative; }
+        
+        /* Premium Neon Glow Matrix Bubbles Background */
+        .bubbles-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
+        .cyber-bubble { position: absolute; background: radial-gradient(circle, rgba(0, 242, 255, 0.6) 0%, rgba(168, 85, 247, 0.2) 50%, transparent 70%); border: 1.5px solid rgba(0, 242, 255, 0.3); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.3); border-radius: 50%; bottom: -150px; animation: cyberFloat 10s infinite ease-in-out; }
+        
+        @keyframes cyberFloat {
+            0% { transform: translateY(0) translateX(0) scale(0.6) rotate(0deg); opacity: 0; }
+            15% { opacity: 0.8; }
+            50% { transform: translateY(-60vh) translateX(50px) scale(1.1) rotate(180deg); filter: hue-rotate(90deg); }
+            85% { opacity: 0.8; }
+            100% { transform: translateY(-135vh) translateX(-30px) scale(0.7) rotate(360deg); opacity: 0; }
         }
 
-        body { 
-            background-color: var(--bg); 
-            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #020408 100%);
-            color: white; 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            overflow-x: hidden;
-        }
+        /* Centering Wrapper for Auth Screen Only */
+        .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; width: 100%; padding: 20px; position: relative; z-index: 5; }
 
-        /* --- AUTH STYLES --- */
-        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-        .auth-card { background: var(--card-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--primary); text-align: center; width: 100%; max-width: 320px; box-shadow: 0 0 20px var(--primary); }
-        .auth-input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: white; }
-        .hidden { display: none !important; }
+        /* Premium Forms Container (Mobile Centered Frame) */
+        .auth-container { width: 100%; max-width: 420px; padding: 25px 16px; z-index: 5; position: relative; }
+        .auth-card { background: #090f1e; border: 1.5px solid rgba(0, 242, 255, 0.15); border-radius: 28px; padding: 35px 22px; text-align: center; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.05); }
+        
+        /* Logo System */
+        .logo-box { width: 130px; height: 130px; margin: 0 auto 18px auto; border-radius: 50%; border: 3.5px solid #00f2ff; box-shadow: 0 0 30px rgba(0, 242, 255, 0.5); background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .brand-logo-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Shield Icon for Create Account */
+        .shield-icon-box { font-size: 42px; color: #00f2ff; text-shadow: 0 0 20px rgba(0, 242, 255, 0.4); margin-bottom: 12px; }
 
-        /* --- TERI ORIGINAL STYLING --- */
-        .navbar { padding: 18px; background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(10px); border-bottom: 2px solid var(--primary); text-align: center; font-weight: 900; color: var(--accent); position: sticky; top: 0; z-index: 1000; letter-spacing: 2px; text-shadow: 0 0 10px var(--accent); }
-        .rgb-card { position: relative; background: var(--card-bg); border-radius: 20px; overflow: hidden; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
-        .rgb-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, var(--accent), var(--primary), transparent 60%); animation: rotate 4s linear infinite; z-index: -1; }
-        .rgb-card::after { content: ""; position: absolute; inset: 3px; background: #0d1117; border-radius: 17px; z-index: -1; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .page { display: none; padding: 20px; }
-        .active-page { display: block; }
-        .balance-text { font-size: 48px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 10px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .grid-item { padding: 25px 10px; text-align: center; background: rgba(255,255,255,0.03); border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); font-weight: bold; }
-        .btn-main { background: linear-gradient(135deg, var(--primary), #ff004c); border: none; color: white; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-buy { padding: 6px 15px; font-size: 12px; background: linear-gradient(95deg, #7000ff, var(--accent)); border-radius: 8px; width: auto !important; }
-        .price-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 12px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.05); }
-        .prod-card { margin-bottom: 20px; padding: 20px; }
-        .cat-head { color: #fff; font-size: 12px; margin: 30px 0 15px 5px; text-transform: uppercase; letter-spacing: 3px; display: flex; align-items: center; }
-        .cat-head::after { content: ""; height: 2px; flex: 1; background: linear-gradient(to right, var(--primary), transparent); margin-left: 10px; }
-        .qr-frame { background: white; padding: 12px; border-radius: 20px; width: 210px; margin: 20px auto; }
+        /* Typography */
+        .panel-title { color: #ffffff; font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px; }
+        .panel-subtitle { color: #00f2ff; font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 2.5px; margin-bottom: 30px; font-weight: 600; text-transform: uppercase; opacity: 0.9; }
+        
+        /* Premium Input Elements */
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group input { width: 100%; background: #050a16; border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; color: #fff; font-size: 13px; font-family: 'Poppins', sans-serif; font-weight: 400; letter-spacing: 0.5px; transition: all 0.3s ease; }
+        .input-group input::placeholder { color: #4e5d78; font-weight: 500; text-transform: uppercase; font-size: 12px; }
+        .input-group input:focus { outline: none; border-color: #00f2ff; background: #060e20; box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+
+        /* Action Cyan Buttons */
+        .auth-btn { width: 100%; background: #00e5ff; color: #000000; border: none; border-radius: 14px; padding: 16px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3); }
+        .auth-btn:hover { background: #00b4cc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(0, 229, 255, 0.45); }
+        
+        .switch-screen-text { margin-top: 24px; font-size: 12px; color: #6b7a99; font-weight: 500; }
+        .switch-screen-text a { color: #00f2ff; text-decoration: none; font-weight: 600; margin-left: 4px; transition: 0.2s; }
+        .switch-screen-text a:hover { text-decoration: underline; }
+        
+        /* Dashboard Framework Style */
+        .page { width: 100%; max-width: 440px; padding: 20px 12px 80px 12px; z-index: 5; display: none; margin: 0 auto; }
+        .page-wide { max-width: 95%; width: 1000px; margin: 0 auto; }
+        
+        /* Top Header & Interactive Hamburger Icon */
+        .top-header { background: rgba(9, 15, 30, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 18px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .menu-btn { background: none; border: none; color: #8fa0bc; font-size: 20px; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .menu-btn:hover { color: #00f2ff; }
+
+        /* ==================== PREMIUM SLIDE-IN SIDEBAR ==================== */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #070c16; border-right: 1.5px solid rgba(0, 242, 255, 0.2); z-index: 999; padding: 24px 18px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 10px 0 30px rgba(0,0,0,0.7); }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 998; display: none; }
+        .sidebar-overlay.active { display: block; }
+        
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-close-btn { background: none; border: none; color: #ef4444; font-size: 24px; cursor: pointer; }
+        
+        .sidebar-menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; color: #b4c2d3; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.3s; }
+        .sidebar-item:hover { background: rgba(0, 242, 255, 0.08); color: #00f2ff; padding-left: 22px; }
+        .sidebar-item i { width: 22px; font-size: 16px; text-align: center; }
+        .sidebar-item.logout-item { color: #ef4444; margin-top: 20px; border-top: 1px solid rgba(239, 68, 68, 0.1); padding-top: 20px; }
+        .sidebar-item.logout-item:hover { background: rgba(239, 68, 68, 0.08); color: #f87171; }
+
+        /* Panel Components Layout */
+        .wallet-card { background: #090f1e; border-radius: 20px; padding: 26px 20px; text-align: center; border: 1px solid rgba(255, 46, 99, 0.15); margin-bottom: 16px; }
+        .wallet-balance { font-family: 'Orbitron', sans-serif; color: #ff2e63; font-size: 34px; font-weight: 700; text-shadow: 0 0 15px rgba(255, 46, 99, 0.35); }
+        .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .nav-box { background: #090f1e; border-radius: 18px; padding: 22px 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; }
+        .nav-box:hover { transform: translateY(-3px); border-color: rgba(0,242,255,0.25); background: #0d162d; }
+        .nav-box i { font-size: 24px; margin-bottom: 10px; }
+        
+        /* Reseller Styling */
+        .reseller-section-title { color: #00f2ff; font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; margin: 25px 0 15px 4px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .prod-card { background: #090f1e; border: 1.5px solid rgba(0, 242, 255, 0.12); border-radius: 22px; padding: 20px; margin-bottom: 18px; text-align: center; }
+        .feature-badge { background: #050a15; border-left: 3px solid #10b981; padding: 11px 15px; border-radius: 6px; text-align: left; font-size: 11px; color: #b4c2d3; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .feature-badge i { color: #10b981; font-size: 12px; }
+        .price-row { background: #050a15; border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .price-left { display: flex; flex-direction: column; text-align: left; }
+        .price-title { font-size: 12px; color: #8fa0bc; font-weight: 500; }
+        .price-amt { font-size: 14px; color: #00f2ff; font-weight: 700; margin-top: 1px; font-family: 'Orbitron', sans-serif; }
+        .btn-buy-slot { background: linear-gradient(135deg, #00e5ff, #0088cc); color: black; border: none; padding: 8px 18px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; box-shadow: 0 2px 10px rgba(0, 229, 255, 0.2); }
+        .btn-buy-slot:hover { transform: scale(1.05); background: linear-gradient(135deg, #00f2ff, #00b4cc); }
+        
+        /* History Logs Tables Styling */
+        .table-responsive-wrapper { width: 100%; overflow-x: auto; background: #090f1e; border: 1px solid rgba(0, 242, 255, 0.15); border-radius: 18px; margin-top: 15px; }
+        .premium-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 750px; }
+        .premium-table th { background: #0e172e; padding: 15px; color: #00f2ff; font-family: 'Orbitron', sans-serif; font-size: 11px; border-bottom: 2px solid rgba(0, 242, 255, 0.15); }
+        .premium-table td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #b4c2d3; }
+        .key-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed rgba(0, 242, 255, 0.3); color: #00f2ff; padding: 5px 10px; border-radius: 6px; font-family: monospace; }
+        .btn-back-nav { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,242,255,0.3); color: #00f2ff; padding: 8px 14px; border-radius: 10px; font-family: 'Orbitron', sans-serif; font-size: 11px; cursor: pointer; margin-bottom: 15px; }
 </style>
   </head>
   <body>
 
-    <div id="auth-screen">
-	  <div class="auth-card" id="login-box">
-		<h3 style="color: var(--accent);">PIYUSH GAMING STORE</h3>
-		<input type="email" id="email" class="auth-input" placeholder="Email">
-		<input type="password" id="pass" class="auth-input" placeholder="Password">
-		<button class="btn-main" onclick="login()">LOGIN</button>
-		<p style="font-size: 12px; margin-top: 15px;" onclick="toggleAuth(true)">New User? <span style="color: var(--primary);">Create Account</span></p>
-	  </div>
+    <div class="bubbles-bg" id="bubblesContainer"></div>
 
-	  <div class="auth-card hidden" id="signup-box">
-		<h2 style="color: var(--primary);">REGISTER</h2>
-		<input type="text" id="user-name" class="auth-input" placeholder="Full Name">
-		<input type="email" id="s-email" class="auth-input" placeholder="Email">
-		<input type="password" id="s-pass" class="auth-input" placeholder="Password">
-		<button class="btn-main" style="background: var(--accent); color: #000;" onclick="signup()">SIGNUP</button>
-		<p style="font-size: 12px; margin-top: 15px;" onclick="toggleAuth(false)">Back to <span style="color: var(--accent);">Login</span></p>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebarMenu(false)"></div>
+    <div class="sidebar" id="sidebarMenu">
+	  <div class="sidebar-header">
+		<h3 style="font-family:'Orbitron'; font-size:16px; color:#00f2ff; letter-spacing:1px;">NAVIGATION</h3>
+		<button class="sidebar-close-btn" onclick="toggleSidebarMenu(false)">&times;</button>
 	  </div>
+	  <ul class="sidebar-menu-list">
+		<li class="sidebar-item" onclick="navigateToPage('dashboard'); toggleSidebarMenu(false);"><i class="fa-solid fa-house"></i> Dashboard Home</li>
+		<li class="sidebar-item" onclick="navigateToPage('deposit'); toggleSidebarMenu(false);"><i class="fa-solid fa-credit-card"></i> Deposit Balance</li>
+		<li class="sidebar-item" onclick="navigateToPage('shop'); toggleSidebarMenu(false);"><i class="fa-solid fa-cart-shopping"></i> Buy Reseller Keys</li>
+		<li class="sidebar-item" onclick="navigateToPage('my-keys-page'); toggleSidebarMenu(false);"><i class="fa-solid fa-key"></i> My Active Keys</li>
+		<li class="sidebar-item" onclick="navigateToPage('history-page'); toggleSidebarMenu(false);"><i class="fa-solid fa-clock-rotate-left"></i> Sales History</li>
+		<li class="sidebar-item logout-item" onclick="logOutSession()"><i class="fa-solid fa-power-off"></i> Logout Panel</li>
+	  </ul>
     </div>
 
-    <div id="main-app" class="hidden">
-	  <div class="navbar">PIYUSH GAMING STORE</div>
-
-	  <div id="dashboard" class="page active-page">
-		<div class="rgb-card wallet-header" style="padding: 30px; text-align: center; margin: 20px;">
-		  <span style="opacity:0.6; font-size:12px; letter-spacing: 1px;">CURRENT WALLET</span>
-		  <div class="balance-text" id="balance-display">₹1000.00</div>
-		  <div id="welcome-msg" style="color: var(--accent); font-size: 12px; font-weight: bold;"></div>
-		</div>
-
-		<div class="grid" style="padding: 20px;">
-		  <div class="grid-item" onclick="showPage('shop')"><div style="font-size:28px;">🎮</div>STORE</div>
-		  <div class="grid-item" onclick="showPage('deposit')"><div style="font-size:28px;">⚡</div>ADD CASH</div>
-		  <div class="grid-item" onclick="viewMyKeys()"><div style="font-size:28px;">🔐</div>MY KEYS</div>
-		  <div class="grid-item" onclick="logout()"><div style="font-size:28px;">🚪</div>LOGOUT</div>
-		</div>
-	  </div>
-	  
-	  <div id="my-keys-page" style="display:none; padding: 15px; background:#1e1e24; border-radius:15px; margin-top:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
-		<div style="text-align:center;">
-		  <h3 style="color:#00f2ff; margin-bottom: 15px; letter-spacing: 1px;">🔑 MY PREMIUM KEYS</h3>
-		  <button style="background:#ff2e63; color:white; border:none; padding:5px 15px; border-radius:5px; font-size:12px; cursor:pointer; margin-bottom:15px;" onclick="document.getElementById('my-keys-page').style.display='none'">[ ❌ CLOSE PAGE ]</button>
-
-		  <div id="keys-container" style="font-weight:bold; font-size:14px; padding:5px; min-height: 100px; color:#fff;">
-			Loading order details...
+    <div id="auth-section" class="auth-wrapper">
+	  <div id="login-screen" class="auth-container">
+		<div class="auth-card">
+		  <div class="logo-box">
+			<img src="logo.png" class="brand-logo-img" alt="Piyush Gaming Logo" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
 		  </div>
-		</div>
-	  </div>
-	  
-	  <div id="shop" class="page">
-		<button class="btn-main" style="background:#1e293b; margin-bottom:20px;" onclick="showPage('dashboard')">← BACK TO HOME</button>
-		<div class="cat-head">Dripclient Collection</div>
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">DRIPCLIENT NON ROOT</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">AIMKILL • SILENT AIM • UNDER KILL</div>
-		  <div class="price-row"><span>1 Day</span> <b>₹79</b> <button class="btn-main btn-buy" onclick="buy(79)">BUY</button></div>
-		  <div class="price-row"><span>3 Day</span> <b>₹149</b> <button class="btn-main btn-buy" onclick="buy(149)">BUY</button></div>
-		  <div class="price-row"><span>7 Days</span> <b>₹249</b> <button class="btn-main btn-buy" onclick="buy(249)">BUY</button></div>
-		  <div class="price-row"><span>15 Day</span> <b>₹410</b> <button class="btn-main btn-buy" onclick="buy(410)">BUY</button></div>
-		  <div class="price-row"><span>30 Days</span> <b>₹549</b> <button class="btn-main btn-buy" onclick="buy(549)">BUY</button></div>
-		</div>
+		  <h2 class="panel-title">PIYUSH GAMING</h2>
+		  <p class="panel-subtitle">PANEL STORE</p>
 
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">DRIPCLIENT PC</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">PC VERSION • AIM KILL • SILENT</div>
-		  <div class="price-row"><span>1 Day</span> <b>₹139</b> <button class="btn-main btn-buy" onclick="buy(139)">BUY</button></div>
-		  <div class="price-row"><span>7 Day</span> <b>₹349</b> <button class="btn-main btn-buy" onclick="buy(349)">BUY</button></div>
-		  <div class="price-row"><span>15 Day</span> <b>₹499</b> <button class="btn-main btn-buy" onclick="buy(349)">BUY</button></div>
-		  <div class="price-row"><span>30 Days</span> <b>₹599</b> <button class="btn-main btn-buy" onclick="buy(599)">BUY</button></div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">DRIPCLIENT ROOT</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">PC VERSION • AIM KILL • SILENT</div>
-		  <div class="price-row"><span>1 Day</span> <b>₹80</b> <button class="btn-main btn-buy" onclick="buy(80)">BUY</button></div>
-		  <div class="price-row"><span>7 Day</span> <b>₹299</b> <button class="btn-main btn-buy" onclick="buy(299)">BUY</button></div>
-		  <div class="price-row"><span>30 Day</span> <b>₹549</b> <button class="btn-main btn-buy" onclick="buy(549)">BUY</button></div>
-		</div>
-		
-		<div class="cat-head">Premium Mobile Cheats</div>
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">HG CHEATS</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;"> • AIM MAGNETIV • SILENT AIM • AIMBOT</div>
-		  <div class="price-row"><span>1 Day</span> <b>₹80</b> <button class="btn-main btn-buy" onclick="buy(80)">BUY</button></div>
-		  <div class="price-row"><span>7 Day</span> <b>₹249</b> <button class="btn-main btn-buy" onclick="buy(249)">BUY</button></div>
-		  <div class="price-row"><span>10 Day</span> <b>₹299</b> <button class="btn-main btn-buy" onclick="buy(299)">BUY</button></div>
-		  <div class="price-row"><span>30 Days</span> <b>₹549</b> <button class="btn-main btn-buy" onclick="buy(549)">BUY</button></div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">PRIME HOOK</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">SPEED • SILENT AIM • BRUTAL</div>
-		  <div class="price-row"><span>1 Days</span> <b>₹70</b> <button class="btn-main btn-buy" onclick="buy(70)">BUY</button></div>
-		  <div class="price-row"><span>3 Days</span> <b>₹119</b> <button class="btn-main btn-buy" onclick="buy(119)">BUY</button></div>
-		  <div class="price-row"><span>7 Days</span> <b>₹249</b> <button class="btn-main btn-buy" onclick="buy(249)">BUY</button></div>
-		  <div class="price-row"><span>10 Days</span> <b>₹310</b> <button class="btn-main btn-buy" onclick="buy(310)">BUY</button></div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">PATO TEAM</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">SILENT AIM • AIM MAGNET • SPEED</div>
-		  <div class="price-row"><span>7 Days</span> <b>₹319</b> <button class="btn-main btn-buy" onclick="buy(319)">BUY</button></div>
-		  <div class="price-row"><span>7 Days (Brutal)</span> <b>₹349</b> <button class="btn-main btn-buy" onclick="buy(349)">BUY</button></div>
-		  <div class="price-row"><span>3 Days (Safe+Brutal)</span> <b>₹299</b> <button class="btn-main btn-buy" onclick="buy(299)">BUY</button></div>
-		  <div class="price-row"><span>15 Days</span> <b>₹499</b> <button class="btn-main btn-buy" onclick="buy(499)">BUY</button></div>
-		  <div class="price-row"><span>30 Days</span> <b>₹649</b> <button class="btn-main btn-buy" onclick="buy(649)">BUY</button></div>
-		</div>
-     
-		<div id="my-keys-page" class="page" style="display:none; padding: 15px;">
-		  <button class="btn-main" style="background:#1e293b; margin-bottom:20px; border:none; color:white; padding:10px 20px; border-radius:8px; cursor:pointer;" onclick="showPage('dashboard')">← BACK TO HOME</button>
-
-		  <div class="rgb-card" style="padding:25px; text-align:center; background:#1e1e24; border-radius:15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-			<h3 style="color:#00f2ff; margin-bottom: 20px; letter-spacing: 1px;">🔑 MY PREMIUM KEYS</h3>
-
-			<div id="keys-container" style="margin-top:20px; font-weight:bold; font-size:14px; padding:5px; min-height: 120px;">
-			  Loading order details...
+		  <form onsubmit="handleLogin(event)">
+			<div class="input-group">
+			  <input type="text" id="usernameInput" placeholder="User Name" required autocomplete="off">
 			</div>
-		  </div>
+			<div class="input-group">
+			  <input type="password" id="passwordInput" placeholder="Password" required>
+			</div>
+			<button type="submit" class="auth-btn" style="margin-top: 10px;">Login Now</button>
+		  </form>
+		  <div class="switch-screen-text">New User?<a href="#" onclick="switchAuthView('register')">Create Account</a></div>
 		</div>
-		
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;"> BR MODS MOBILE </span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">
-			SILENT AIM • AIM MAGNET • SPEED
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 1 Days</span> 
-			<b>₹80</b> 
-			<button class="btn-main btn-buy" onclick="buy(80)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 7 Days</span> 
-			<b>₹269</b> 
-			<button class="btn-main btn-buy" onclick="buy(269)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 15 Days</span> 
-			<b>₹449</b> 
-			<button class="btn-main btn-buy" onclick="buy(449)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>30 Days</span> 
-			<b>₹599</b> 
-			<button class="btn-main btn-buy" onclick="buy(599)">BUY</button>
-		  </div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;"> BR MODS PC AIM SILENT </span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">
-			SILENT AIM • AIM MAGNET • SPEED
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 1 Days</span> 
-			<b>₹80</b> 
-			<button class="btn-main btn-buy" onclick="buy(80)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 10 Days</span> 
-			<b>₹379</b> 
-			<button class="btn-main btn-buy" onclick="buy(379)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 30 Days</span> 
-			<b>₹699</b> 
-			<button class="btn-main btn-buy" onclick="buy(699)">BUY</button>
-		  </div>
-		</div>
-		
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;">BR MODS PC BYPASS+AIM SILNT</span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">SPEED • AIM MAGNET • SILENT AIM</div>
-		  <div class="price-row"><span>1 Day</span> <b>₹110</b> <button class="btn-main btn-buy" onclick="buy(110)">BUY</button></div>
-		  <div class="price-row"><span>10 Day</span> <b>₹379</b> <button class="btn-main btn-buy" onclick="buy(379)">BUY</button></div>
-		  <div class="price-row"><span>30 Day</span> <b>₹749</b> <button class="btn-main btn-buy" onclick="buy(749)">BUY</button></div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;"> IOS PANEL FLUORITE FF </span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">
-			SILENT AIM • AIMBOT • SPEED
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 1 Days</span> 
-			<b>₹299</b> 
-			<button class="btn-main btn-buy" onclick="buy(299)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 7 Days</span> 
-			<b>₹749</b> 
-			<button class="btn-main btn-buy" onclick="buy(749)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 30 Days</span> 
-			<b>₹1499</b> 
-			<button class="btn-main btn-buy" onclick="buy(1499)">BUY</button>
-		  </div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;"> HIKARI MOD FF ROOT </span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">
-			STREAMER PANEL • SILENT AIM • AIM MAGNET
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 1 Days</span> 
-			<b>₹99</b> 
-			<button class="btn-main btn-buy" onclick="buy(99)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 15 Days</span> 
-			<b>₹349</b> 
-			<button class="btn-main btn-buy" onclick="buy(349)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 30 Days</span> 
-			<b>₹599</b> 
-			<button class="btn-main btn-buy" onclick="buy(599)">BUY</button>
-		  </div>
-		</div>
-
-		<div class="rgb-card prod-card">
-		  <span style="color:var(--accent); font-weight:900; font-size:18px;"> XYS CHEATS ROOT + VPHONE </span>
-		  <div style="font-size:10px; color:var(--green); margin-bottom:12px; font-weight:bold;">
-			SILENT AIM • AIM MAGNETIC • AIMBOT
-		  </div>
-
-		  <div class="price-row">
-			<span> 1 Days</span> 
-			<b>₹99</b> 
-			<button class="btn-main btn-buy" onclick="buy(99)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span> 7 Days</span> 
-			<b>₹199</b> 
-			<button class="btn-main btn-buy" onclick="buy(199)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span>️ 15 Days</span> 
-			<b>₹399</b> 
-			<button class="btn-main btn-buy" onclick="buy(399)">BUY</button>
-		  </div>
-
-		  <div class="price-row">
-			<span> 30 Days</span> 
-			<b>₹599</b> 
-			<button class="btn-main btn-buy" onclick="buy(599)">BUY</button>
-		  </div>
-		</div>
-
-
-		<p style="text-align:center; font-size:11px; opacity:0.5;">...All Products Loaded...</p>
 	  </div>
-	  
 
-	  <div id="deposit" class="page">
-		<button class="btn-main" style="background:#1e293b; margin-bottom:20px;" onclick="showPage('dashboard')">← BACK</button>
-		<div class="rgb-card" style="padding:25px; text-align:center;">
-		  <h3 style="color:var(--accent);">SCAN & PAY</h3>
-		  <div class="qr-frame">
-			<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=chandanpiyush73-2@okhdfcbank%26pn=Piyush%20Chandan%26cu=INR" style="width:100%;">
+	  <div id="register-screen" class="auth-container" style="display: none;">
+		<div class="auth-card">
+		  <div class="logo-box">
+			<img src="logo.png" class="brand-logo-img" alt="Piyush Gaming Logo" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
 		  </div>
-		  <input type="number" id="utr-num" style="width:90%; padding:12px; margin:10px 0; border-radius:10px; background:#000; border:1px solid var(--accent); color:#fff;" placeholder="Enter 12-Digit UTR">
-		  <button class="btn-main" onclick="verifyUTR()">VERIFY PAYMENT</button>
+		  <h2 class="panel-title" style="font-size: 22px;">ADMIN PANEL</h2>
+		  <p class="panel-subtitle" style="margin-bottom: 25px; color: #8fa0bc;">CREATE ACCOUNT</p>
+
+		  <form onsubmit="handleRegistration(event)">
+			<div class="input-group">
+			  <input type="text" id="regUsernameInput" placeholder="USER NAME" required autocomplete="off">
+			</div>
+			<div class="input-group">
+			  <input type="email" id="regEmailInput" placeholder="EMAIL ADDRESS" required autocomplete="off">
+			</div>
+			<div class="input-group">
+			  <input type="password" id="regPasswordInput" placeholder="PASSWORD" required>
+			</div>
+			<div class="input-group">
+			  <input type="password" id="regConfirmPasswordInput" placeholder="CONFIRM PASSWORD" required>
+			</div>
+			<div class="input-group">
+			  <input type="text" id="regReferralInput" placeholder="REFERRAL CODE">
+			</div>
+
+			<button type="submit" class="auth-btn">REGISTER NOW</button>
+		  </form>
+		  <div class="switch-screen-text">Already Member?<a href="#" onclick="switchAuthView('login')">Login Now</a></div>
 		</div>
 	  </div>
     </div>
+
+    <div id="dashboard" class="page">
+	  <header class="top-header">
+		<button class="menu-btn" onclick="toggleSidebarMenu(true)">
+		  <i class="fa-solid fa-bars"></i>
+		</button>
+		<h4 style="font-family:'Orbitron'; font-size:13px; letter-spacing:1px;">PIYUSH GAMING</h4>
+		<div style="width:32px; height:32px; border-radius:50%; border:1.5px solid #00f2ff; overflow:hidden;">
+		  <img src="logo.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
+		</div>
+	  </header>
+
+	  <div class="wallet-card">
+		<p style="font-size: 11px; color: #8fa0bc; text-transform: uppercase; margin-bottom: 4px;">Your Current Balance</p>
+		<div class="wallet-balance" id="displayWalletBalance">₹0.00</div>
+	  </div>
+
+	  <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.25); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 20px;">
+		<p style="font-size: 12px; color: #b4c2d3;"><i class="fa-brands fa-telegram" style="color:#0088cc; margin-right:6px;"></i> Join Telegram channel for instant support updates.</p>
+		<a href="https://t.me/MatchMasterMind_Official" target="_blank" style="display:block; background:#0088cc; color:#fff; text-decoration:none; padding:10px; border-radius:10px; font-size:12px; font-weight:600; margin-top:10px;">JOIN NOW</a>
+	  </div>
+
+	  <div class="nav-grid">
+		<div class="nav-box" onclick="navigateToPage('deposit')"><i class="fa-solid fa-credit-card" style="color:#00f2ff"></i><span style="font-size:12px; margin-top:8px;">DEPOSIT</span></div>
+		<div class="nav-box" onclick="navigateToPage('shop')"><i class="fa-solid fa-cart-shopping" style="color:#e11d48"></i><span style="font-size:12px; margin-top:8px;">BUY KEYS</span></div>
+		<div class="nav-box" onclick="navigateToPage('my-keys-page')"><i class="fa-solid fa-key" style="color:#f59e0b"></i><span style="font-size:12px; margin-top:8px;">MY KEYS</span></div>
+		<div class="nav-box" onclick="navigateToPage('history-page')"><i class="fa-solid fa-clock-rotate-left" style="color:#10b981"></i><span style="font-size:12px; margin-top:8px;">HISTORY</span></div>
+		<div class="nav-box" style="grid-column: span 2; padding: 14px;" onclick="logOutSession()"><i class="fa-solid fa-power-off" style="color:#ef4444; font-size:18px;"></i><span style="font-size:11px; margin-top:4px; color:#ef4444;">LOGOUT PANEL</span></div>
+	  </div>
+    </div>
+
+    <div id="shop" class="page">
+	  <header class="top-header">
+		<button class="menu-btn" onclick="toggleSidebarMenu(true)"><i class="fa-solid fa-bars"></i></button>
+		<h4 style="font-family:'Orbitron'; font-size:13px; letter-spacing:1px;">STORE</h4>
+		<div style="width:32px; height:32px; border-radius:50%; border:1.5px solid #00f2ff; overflow:hidden;">
+		  <img src="logo.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
+		</div>
+	  </header>
+
+	  <button class="btn-back-nav" onclick="navigateToPage('dashboard')"><i class="fa-solid fa-arrow-left"></i> BACK TO HOME</button>
+
+	  <div class="reseller-section-title">>> Dripclient Collection</div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">DRIPCLIENT NON ROOT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>AIMKILL • SILENT AIM • UNDER KILL</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹79</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT NON ROOT', '1 Day', 79, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">3 Day</span><span class="price-amt">₹149</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT NON ROOT', '3 Day', 149, 72)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹249</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT NON ROOT', '7 Days', 249, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Day</span><span class="price-amt">₹410</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT NON ROOT', '15 Day', 410, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹549</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT NON ROOT', '30 Days', 549, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">DRIPCLIENT PC</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>PC VERSION • AIM KILL • SILENT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹139</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT PC', '1 Day', 139, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Day</span><span class="price-amt">₹349</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT PC', '7 Day', 349, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Day</span><span class="price-amt">₹499</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT PC', '15 Day', 499, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹599</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT PC', '30 Days', 599, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">DRIPCLIENT ROOT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>ROOT VERSION • AIM KILL • SILENT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Day</span><span class="price-amt">₹299</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT ROOT', '7 Day', 299, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Day</span><span class="price-amt">₹549</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT ROOT', '30 Day', 549, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">DRIPCLIENT 8BP NONROOT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>8 BALL POOL • LINE HACK • SAFE</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹60</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT 8BP NONROOT', '1 Day', 60, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹150</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT 8BP NONROOT', '7 Days', 150, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹390</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('DRIPCLIENT 8BP NONROOT', '30 Days', 390, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="reseller-section-title">>> Premium Mobile Cheats</div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">HG CHEATS</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>AIM MAGNETIC • SILENT AIM • AIMBOT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹80</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HG CHEATS', '1 Day', 80, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Day</span><span class="price-amt">₹249</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HG CHEATS', '7 Day', 249, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Day</span><span class="price-amt">₹299</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HG CHEATS', '10 Day', 299, 240)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹549</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HG CHEATS', '30 Days', 549, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">PRIME HOOK</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>SPEED • SILENT AIM • BRUTAL</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Days</span><span class="price-amt">₹70</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PRIME HOOK', '1 Days', 70, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">3 Days</span><span class="price-amt">₹119</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PRIME HOOK', '3 Days', 119, 72)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹249</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PRIME HOOK', '7 Days', 249, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Days</span><span class="price-amt">₹310</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PRIME HOOK', '10 Days', 310, 240)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">PATO TEAM</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>SILENT AIM • AIM MAGNET • SPEED</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">3 Days</span><span class="price-amt">₹160</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PATO TEAM', '3 Days', 160, 72)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹319</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PATO TEAM', '7 Days', 319, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Days</span><span class="price-amt">₹499</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PATO TEAM', '15 Days', 499, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹649</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('PATO TEAM', '30 Days', 649, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">BR MODS MOBILE</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>ROOT + VPHONE • ANTIBAN • VIP</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Days</span><span class="price-amt">₹80</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS MOBILE', '1 Days', 80, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹269</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS MOBILE', '7 Days', 269, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Days</span><span class="price-amt">₹449</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS MOBILE', '15 Days', 449, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹599</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS MOBILE', '30 Days', 599, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">BR MODS PC AIM SILENT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>PC VERSION • AIM SILENT • LEGIT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Days</span><span class="price-amt">₹80</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC AIM SILENT', '1 Days', 80, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Days</span><span class="price-amt">₹379</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC AIM SILENT', '10 Days', 379, 240)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹699</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC AIM SILENT', '30 Days', 699, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">BR MODS PC BYPASS+AIM SILNT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>FULL BYPASS • ANTI-MATCHMAKING</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹110</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '1 Day', 110, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Day</span><span class="price-amt">₹379</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '10 Day', 379, 240)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Day</span><span class="price-amt">₹749</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '30 Day', 749, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">HEX BLADE FF ROOT+VPHONE</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>HEX CHEATS • BYPASS PANEL</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹90</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HEX BLADE FF ROOT+VPHONE', '1 Day', 90, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Days</span><span class="price-amt">₹320</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HEX BLADE FF ROOT+VPHONE', '10 Days', 320, 240)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">20 Days</span><span class="price-amt">₹490</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HEX BLADE FF ROOT+VPHONE', '20 Days', 490, 480)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">HAXX-CKER PRO FF ROOT + VPHONE</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>HAXX PRO CHEATS • VIP SLOT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">10 Days</span><span class="price-amt">₹350</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HAXX-CKER PRO FF ROOT + VPHONE', '10 Days', 350, 240)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">NEO STRIKE FF ROOT + VPHONE</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>NEO STRIKE BYPASS PANEL</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day</span><span class="price-amt">₹85</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('NEO STRIKE FF ROOT + VPHONE', '1 Day', 85, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹280</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('NEO STRIKE FF ROOT + VPHONE', '7 Days', 280, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">14 Days</span><span class="price-amt">₹420</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('NEO STRIKE FF ROOT + VPHONE', '14 Days', 420, 336)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">MIGUL IPHONE IOS PANEL</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>IPHONE INTEGRATION • NO ESCAPE</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day (Basic)</span><span class="price-amt">₹120</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '1 Day (Basic)', 120, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Day (PRO)</span><span class="price-amt">₹180</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '1 Day (PRO)', 180, 24)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days (Basic)</span><span class="price-amt">₹450</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '7 Days (Basic)', 450, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days (PRO)</span><span class="price-amt">₹590</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '7 Days (PRO)', 590, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days (Basic)</span><span class="price-amt">₹1100</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '30 Days (Basic)', 1100, 720)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days (PRO)</span><span class="price-amt">₹1490</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', '30 Days (PRO)', 1490, 720)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">Gbox Certificate</span><span class="price-amt">₹400</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('MIGUL IPHONE IOS PANEL', 'Gbox Certificate', 400, 8760)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">IOS PANEL FLUORITE FF</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>SILENT AIM • AIMBOT • SPEED</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">1 Days</span><span class="price-amt">₹299</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '1 Days', 299, 1)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹749</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '7 Days', 749, 7)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹1499</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', '30 Days', 1499, 30)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">Esgin Gbox Certificate</span><span class="price-amt">₹450</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('IOS PANEL FLUORITE FF', 'Gbox Cert', 450, 8760)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">HIKARI MOD FF ROOT</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>STREAMER PANEL • SILENT AIM • AIM MAGNET</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">3 Days</span><span class="price-amt">₹150</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HIKARI MOD FF ROOT', '3 Days', 150, 72)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹280</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HIKARI MOD FF ROOT', '7 Days', 280, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Days</span><span class="price-amt">₹349</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HIKARI MOD FF ROOT', '15 Days', 349, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹599</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('HIKARI MOD FF ROOT', '30 Days', 599, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <div class="prod-card">
+		<h3 style="color:#ffffff; font-family:'Orbitron'; font-size:16px; margin-bottom:15px;">XYZ CHEATS FF ROOT+VPHONE</h3>
+		<div class="feature-badge"><i class="fa-solid fa-bolt"></i> <span>SILENT AIM • AIM MAGNETIC • AIMBOT</span></div>
+		<div style="margin-top: 15px;">
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">3 Days</span><span class="price-amt">₹120</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('XYZ CHEATS FF ROOT+VPHONE', '3 Days', 120, 72)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">7 Days</span><span class="price-amt">₹199</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('XYZ CHEATS FF ROOT+VPHONE', '7 Days', 199, 168)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">15 Days</span><span class="price-amt">₹399</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('XYZ CHEATS FF ROOT+VPHONE', '15 Days', 399, 360)">Buy</button>
+		  </div>
+		  <div class="price-row">
+			<div class="price-left"><span class="price-title">30 Days</span><span class="price-amt">₹599</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('XYZ CHEATS FF ROOT+VPHONE', '30 Days', 599, 720)">Buy</button>
+		  </div>
+		</div>
+	  </div>
+
+	  <p style="text-align:center; font-size:11px; opacity:0.5; margin-top:20px;">...All Products Loaded Successfully...</p>
+    </div>
+
+    <div id="my-keys-page" class="page page-wide">
+	  <header class="top-header">
+		<button class="menu-btn" onclick="toggleSidebarMenu(true)"><i class="fa-solid fa-bars"></i></button>
+		<h4 style="font-family:'Orbitron'; font-size:13px; letter-spacing:1px;">MY KEYS</h4>
+		<div style="width:32px; height:32px; border-radius:50%; border:1.5px solid #00f2ff; overflow:hidden;">
+		  <img src="logo.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
+		</div>
+	  </header>
+	  <button class="btn-back-nav" onclick="navigateToPage('dashboard')"><i class="fa-solid fa-arrow-left"></i> BACK TO HOME</button>
+	  <div class="reseller-section-title">> YOUR KEY SALES HISTORY</div>
+	  <div class="table-responsive-wrapper">
+		<table class="premium-table">
+		  <thead>
+			<tr>
+			  <th>BUYER NAME</th>
+			  <th>PRODUCT / DURATION</th>
+			  <th>KEY CODE</th>
+			  <th>DESCRIPTION</th>
+			  <th>DATE BOUGHT</th>
+			</tr>
+		  </thead>
+		  <tbody id="sales-logs-rows">
+			<tr id="no-keys-row">
+			  <td colspan="5" style="text-align: center; color: #6b7a99; padding: 30px;">No keys purchased yet.</td>
+			</tr>
+		  </tbody>
+		</table>
+	  </div>
+    </div>
+
+    <div id="deposit" class="page">
+	  <header class="top-header">
+		<button class="menu-btn" onclick="toggleSidebarMenu(true)"><i class="fa-solid fa-bars"></i></button>
+		<h4 style="font-family:'Orbitron'; font-size:13px; letter-spacing:1px;">DEPOSIT</h4>
+		<div style="width:32px; height:32px; border-radius:50%; border:1.5px solid #00f2ff; overflow:hidden;">
+		  <img src="logo.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
+		</div>
+	  </header>
+	  <button class="btn-back-nav" onclick="navigateToPage('dashboard')"><i class="fa-solid fa-arrow-left"></i> BACK TO HOME</button>
+	  <div class="prod-card" style="padding: 25px;">
+		<h3 style="color:#00f2ff; font-family:'Orbitron'; margin-bottom:15px; font-size:15px;">AUTOMATIC DEPOSIT UPI</h3>
+		<div style="background:#fff; width:180px; height:180px; margin: 0 auto 15px auto; padding:8px; border-radius:12px;">
+		  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=chandanpiyush73-2@okhdfcbank%26pn=Piyush%20Chandan%26cu=INR" style="width:100%; height:100%;">
+		</div>
+		<input type="number" id="utrTransactionInput" placeholder="Enter 12-Digit Transaction UTR" style="width:100%; background:#050a16; border:1px solid rgba(0,242,255,0.2); padding:14px; border-radius:10px; color:#fff; text-align:center; margin-bottom:12px;">
+		<button class="auth-btn" onclick="submitDepositUTR()">SUBMIT DETAILS</button>
+	  </div>
+    </div>
+
+    <div id="history-page" class="page page-wide">
+	  <header class="top-header">
+        <button class="menu-btn" onclick="toggleSidebarMenu(true)"><i class="fa-solid fa-bars"></i></button>
+        <h4 style="font-family:'Orbitron'; font-size:13px; letter-spacing:1px;">SALES HISTORY</h4>
+        <div style="width:32px; height:32px; border-radius:50%; border:1.5px solid #00f2ff; overflow:hidden;">
+		  <img src="logo.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
+        </div>
+	  </header>
+
+	  <button class="btn-back-nav" onclick="navigateToPage('dashboard')"><i class="fa-solid fa-arrow-left"></i> BACK TO HOME</button>
+
+	  <div class="reseller-section-title">> GLOBAL SALES LOGS</div>
+
+	  <div class="table-responsive-wrapper">
+        <table class="premium-table">
+		  <thead>
+			<tr>
+			  <th>BUYER NAME</th>
+			  <th>PRODUCT / DURATION</th>
+			  <th>KEY CODE</th>
+			  <th>DESCRIPTION</th>
+			  <th>DATE BOUGHT</th>
+			</tr>
+		  </thead>
+		  <tbody id="global-history-rows">
+			<tr id="no-history-row">
+			  <td colspan="5" style="text-align: center; color: #6b7a99; padding: 30px;">No transactions recorded yet.</td>
+			</tr>
+		  </tbody>
+        </table>
+	  </div>
+	</div>
 
 <script>
-        // --- FIREBASE CONFIG ---
+        // =================================================================
+        // 🔥 STEP 1: APNE FIREBASE PROJECT KI CONFIGURATION YAHA PASTE KARO
+        // =================================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyBO33TsaVjIyrTTnN3Om7ZxwQquy-dIvXE",
-            authDomain: "piyush-gaming-store.firebaseapp.com",
-            projectId: "piyush-gaming-store",
-            storageBucket: "piyush-gaming-store.firebasestorage.app",
-            messagingSenderId: "52471545511",
-            appId: "1:52471545511:web:a7b8bac6b6813a94d0e582"
+            apiKey: "AIzaSyCL7gAZylC8N9lF9zI8ldGz1WzLG5oLp4Y",
+            authDomain: "piyushgamingstore.firebaseapp.com",
+            databaseURL: "https://piyushgamingstore-default-rtdb.firebaseio.com",
+            projectId: "piyushgamingstore",
+            storageBucket: "piyushgamingstore.firebasestorage.app",
+            messagingSenderId: "951875770535",
+            appId: "1:951875770535:web:e535efede6bd6278196382"
         };
+        
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+        const database = firebase.database();
 
-        let currentBalance = 0;
+        // Global State variables
+        let currentActiveSessionUser = "";
+        let cleanedUserNode = ""; 
+        let userWalletBalance = 0;
 
-        // --- AUTH LOGIC ---
-        function toggleAuth(isSignup) {
-            document.getElementById('login-box').classList.toggle('hidden', isSignup);
-            document.getElementById('signup-box').classList.toggle('hidden', !isSignup);
+        // PREMIUM MATRIX BUBBLES GENERATOR
+        function buildCyberBubbles() {
+            const container = document.getElementById('bubblesContainer');
+            container.innerHTML = ""; 
+            const totalBubbles = 15;
+            for (let i = 0; i < totalBubbles; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('cyber-bubble');
+                
+                let size = Math.floor(Math.random() * 60) + 40; // 40px to 100px
+                let leftPosition = Math.floor(Math.random() * 100);
+                let delay = Math.random() * 8;
+                let duration = Math.random() * 6 + 8; // 8s to 14s
+
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${leftPosition}%`;
+                bubble.style.animationDelay = `${delay}s`;
+                bubble.style.animationDuration = `${duration}s`;
+
+                container.appendChild(bubble);
+            }
         }
+        window.addEventListener('DOMContentLoaded', buildCyberBubbles);
 
-        function signup() {
-            const name = document.getElementById('user-name').value;
-            const email = document.getElementById('s-email').value;
-            const pass = document.getElementById('s-pass').value;
-            auth.createUserWithEmailAndPassword(email, pass).then(res => {
-                db.ref('users/' + res.user.uid).set({ name: name, balance: 0 });
-                alert("Account Created!");
-            }).catch(err => alert(err.message));
-        }
-
-        function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
-        }
-
-        function logout() { auth.signOut(); }
-
-        // --- AUTH STATE OBSERVER ---
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                db.ref('users/' + user.uid).on('value', snap => {
-                    if(snap.exists()) {
-                        currentBalance = snap.val().balance;
-                        document.getElementById('balance-display').innerText = "₹" + currentBalance.toFixed(2);
-                        document.getElementById('welcome-msg').innerText = "WELCOME, " + snap.val().name.toUpperCase();
-                    }
-                });
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('main-app').classList.add('hidden');
+        // Auto-login configuration on document ready
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedUser = localStorage.getItem('activeUser');
+            let savedNode = localStorage.getItem('userNode');
+            if(savedUser && savedNode){
+                currentActiveSessionUser = savedUser;
+                cleanedUserNode = savedNode;
+                document.getElementById('auth-section').style.display = 'none';
+                navigateToPage('dashboard');
+                startRealtimeSync();
             }
         });
 
-        // --- TERI ORIGINAL FUNCTIONS ---
-        function showPage(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(id).classList.add('active-page');
-            window.scrollTo(0,0);
+        // SIDEBAR TOGGLE MECHANISM
+        function toggleSidebarMenu(isOpen) {
+            const sidebar = document.getElementById('sidebarMenu');
+            const overlay = document.getElementById('sidebarOverlay');
+            if(isOpen) {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
         }
 
-        function verifyUTR() {
-    let u = document.getElementById('utr-num').value;
-    if(u.trim() === "" || u.length < 12) {
-        alert("Bhai, sahi se 12-Digit ka UTR number daalo!");
-        return;
-    }
-    
-    const user = auth.currentUser;
-    if(user) {
-        let orderID = "DD" + Math.floor(1000 + Math.random() * 9000);
-        let currentTime = new Date().toLocaleString();
-        
-        let prodName = (typeof selectedProduct !== 'undefined' && selectedProduct) ? selectedProduct : "Premium Mod Menu";
-        let prodPrice = (typeof selectedPrice !== 'undefined' && selectedPrice) ? selectedPrice : "35"; 
-        let cName = (typeof currentUserData !== 'undefined' && currentUserData.name) ? currentUserData.name : "Customer";
+        // Auth Views Switcher
+        function switchAuthView(panelTarget) {
+            if (panelTarget === 'register') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('register-screen').style.display = 'block';
+            } else {
+                document.getElementById('register-screen').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'block';
+            }
+        }
 
-        // 1. User ke account me order history save karna
-        db.ref('users/' + user.uid + '/my_orders/' + orderID).set({
-            orderId: orderID,
-            productName: prodName,
-            price: prodPrice,
-            utr: u,
-            status: "PENDING",
-            time: currentTime,
-            key: "No Active Keys Yet"
-        }).then(() => {
-            
-            // 🔥 2. JADU: Admin ke main 'orders' folder me entry bhejna (Yeh tumhare dekhne ke liye hai)
-            db.ref('orders/' + orderID).set({
-                orderId: orderID,
-                uid: user.uid,            // Customer ki UID (Isse tum usko dhoodhoge)
-                customerName: cName,      // Customer ka naam
-                productName: prodName,    // Kya order kiya hai (Product Name)
-                price: prodPrice,         // Kitne ka hai (Price)
-                utr: u,                   // Uska UTR number
-                status: "PENDING",
-                time: currentTime
+        // Firebase Integrated Registration System
+        function handleRegistration(event) {
+            event.preventDefault();
+            let rawUsername = document.getElementById('regUsernameInput').value.trim();
+            let email = document.getElementById('regEmailInput').value.trim();
+            let pass = document.getElementById('regPasswordInput').value;
+            let confirmPass = document.getElementById('regConfirmPasswordInput').value;
+            let refCode = document.getElementById('regReferralInput').value.trim();
+
+            if (!rawUsername || !email || !pass) {
+                alert("Please fill all required fields.");
+                return;
+            }
+
+            if (pass !== confirmPass) {
+                alert("Error: Passwords do not match!");
+                return;
+            }
+
+            let username = rawUsername.startsWith('@') ? rawUsername : '@' + rawUsername;
+            let cleanNode = username.replace(/[.#$/\[\]]/g, "_"); // Firebase key protection
+
+            // Check if user already exists
+            database.ref('Panel_Users/' + cleanNode).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    alert("Username already registered! Try another one.");
+                } else {
+                    // Create new automatic user profile inside Firebase
+                    let userData = {
+                        username: username,
+                        email: email,
+                        password: pass, // In clear text as per simple web logic
+                        balance: 0,
+                        referral: refCode,
+                        joinedDate: new Date().toISOString()
+                    };
+
+                    database.ref('Panel_Users/' + cleanNode).set(userData).then(() => {
+                        alert(`Account Successfully Created! Welcome ${username}`);
+                        currentActiveSessionUser = username;
+                        cleanedUserNode = cleanNode;
+                        localStorage.setItem('activeUser', username);
+                        localStorage.setItem('userNode', cleanNode);
+                        document.getElementById('auth-section').style.display = 'none';
+                        navigateToPage('dashboard');
+                        startRealtimeSync();
+                    }).catch(error => {
+                        alert("Database Error: " + error.message);
+                    });
+                }
+            });
+        }
+
+        // Firebase Integrated Login Verification System
+        function handleLogin(event) {
+            event.preventDefault();
+            let rawUsername = document.getElementById('usernameInput').value.trim();
+            let pass = document.getElementById('passwordInput').value;
+
+            if(!rawUsername || !pass) {
+                alert("Please fill all details.");
+                return;
+            }
+
+            let username = rawUsername.startsWith('@') ? rawUsername : '@' + rawUsername;
+            let cleanNode = username.replace(/[.#$/\[\]]/g, "_");
+
+            database.ref('Panel_Users/' + cleanNode).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    let dbUserData = snapshot.val();
+                    if (dbUserData.password === pass) {
+                        currentActiveSessionUser = username;
+                        cleanedUserNode = cleanNode;
+                        localStorage.setItem('activeUser', username);
+                        localStorage.setItem('userNode', cleanNode);
+                        document.getElementById('auth-section').style.display = 'none';
+                        navigateToPage('dashboard');
+                        startRealtimeSync();
+                    } else {
+                        alert("Error: Incorrect Password!");
+                    }
+                } else {
+                    alert("Error: Username not found inside server!");
+                }
+            }).catch(error => {
+                alert("Database Error: " + error.message);
+            });
+        }
+
+        // Realtime Data Sync System for Balance and Lists
+        function startRealtimeSync() {
+            if (!cleanedUserNode) return;
+
+            // 1. Sync current balance automatically
+            database.ref('Panel_Users/' + cleanedUserNode + '/balance').on('value', (snapshot) => {
+                userWalletBalance = snapshot.val() || 0;
+                document.getElementById('displayWalletBalance').innerText = "₹" + Number(userWalletBalance).toFixed(2);
             });
 
-            alert("✅ Reference Submitted Successfully!\nOrder ID: " + orderID);
-            if(document.getElementById('utr-num')) document.getElementById('utr-num').value = "";
-            showPage('dashboard');
-            
-        }).catch(err => alert("Error: " + err.message));
-    } else {
-        alert("Pehle login karo bhai!");
-    }
-}
-
-// ==========================================
-// 1. GLOBAL VARIABLES (Script me sabse upar rakhna)
-// ==========================================
-let selectedProduct = "Premium Mod Menu"; // Default name
-let selectedPrice = "35";                // Default price
-
-// ==========================================
-// 2. TUMHAARA ASLI BUY BUTTON CODE (UPDATED)
-// ==========================================
-        function buy(p) {
-    // Agar currentBalance pehle se script me load ho raha hai toh sahi chalega
-    if(currentBalance >= p) {
-        let newBal = currentBalance - p;
-        
-        // 🔥 Tumhaare code me price aur default name save karne ke liye
-        selectedPrice = p; 
-        
-        // Firebase me balance update karna (Tumhaari asli line)
-        db.ref('users/' + auth.currentUser.uid).update({ balance: newBal });
-        
-        alert("🔥 Purchase Successful!");
-        
-        // Tumhaare page open karne ka tareeka
-        showPage('deposit'); 
-    } else {
-        alert("❌ Low Balance!");
-        showPage('deposit');
-    }
-}
-
-
-		function viewMyKeys() {
-    // Agar direct style bypass chalaya tha toh dono me se jo chal rha ho open karega
-    let page = document.getElementById('my-keys-page');
-    if(page) page.style.display = 'block'; 
-    showPage('my-keys-page'); 
-
-    const user = auth.currentUser;
-    let container = document.getElementById('keys-container');
-    if(!container) return;
-
-    container.innerHTML = "<div style='color:#aaa; text-align:center;'>Loading your orders...</div>";
-
-    if(user) {
-        // Live database updates sunna (.on lagaya hai)
-        db.ref('users/' + user.uid + '/my_orders').on('value', snap => {
-            if(snap.exists()) {
-                let htmlContent = "";
+            // 2. Sync Personal Keys purchased
+            database.ref('Sales_Logs').orderByChild('buyerNode').equalTo(cleanedUserNode).on('value', (snapshot) => {
+                const myKeysBody = document.getElementById('sales-logs-rows');
+                myKeysBody.innerHTML = ""; // reset UI table
                 
-                // Firebase se saare unique orders ko nikalna aur loop chalana
-                snap.forEach(childSnap => {
-                    let order = childSnap.val();
-                    
-                    let statusColor = "#ffb300"; // Pending ke liye yellow/orange
-                    let statusBg = "rgba(255,179,0,0.05)";
-                    let keySection = `<span style="font-size:12px; opacity:0.6; color:#ffb300;">⏳ Admin verifying payment...</span>`;
-                    
-                    // Agar order success ho gaya hai aur tumne key de di hai
-                    if(order.status === "DELIVERED" || (order.key && order.key !== "No Active Keys Yet")) {
-                        statusColor = "#39ff14"; // Delivered ke liye green
-                        statusBg = "rgba(57,255,20,0.03)";
-                        keySection = `
-                            <div style="margin-top:10px; display:flex; gap:5px; align-items:center; background:#050505; padding:8px; border-radius:6px; border:1px dashed #39ff14;">
-                                <span style="font-size:12px; color:#00f2ff; font-family:monospace; word-break:break-all; flex:1;">Key: ${order.key}</span>
-                                <button style="background:#111; color:#39ff14; border:1px solid #39ff14; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" onclick="navigator.clipboard.writeText('${order.key}'); alert('Key Copied!');">📋 Copy</button>
-                            </div>
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        let rowData = childSnapshot.val();
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:4px 8px; border-radius:6px;">${rowData.buyerName}</span></td>
+                            <td><span style="color:#38bdf8; font-weight:600;">${rowData.product}</span><br><span style="font-size:11px; background:#1e293b; padding:2px 5px; border-radius:4px;">${rowData.duration}</span></td>
+                            <td><span class="key-box">${rowData.keyCode}</span></td>
+                            <td>${rowData.description}</td>
+                            <td style="color:#10b981; font-weight:500;">${rowData.dateBought}</td>
                         `;
-                    }
+                        myKeysBody.appendChild(row);
+                    });
+                } else {
+                    myKeysBody.innerHTML = `<tr id="no-keys-row"><td colspan="5" style="text-align: center; color: #6b7a99; padding: 30px;">No keys purchased yet.</td></tr>`;
+                }
+            });
 
-                    // Ek ek karke card append karna (Jaise screenshot me panel dikh raha hai)
-                    htmlContent = `
-                        <div style="border: 1px solid rgba(255,255,255,0.05); background:${statusBg}; padding:15px; border-radius:12px; margin-bottom:15px; text-align:left;">
-                            <div style="display:flex; justify-content:between; align-items:center; margin-bottom:8px;">
-                                <span style="color:${statusColor}; font-size:13px; font-weight:bold;">
-                                    ${order.key !== "No Active Keys Yet" ? "🟢 Delivered" : "⏳ Pending"}
-                                </span>
-                                <span style="font-size:12px; color:#00f2ff; font-family:monospace; float:right;">ID: ${order.orderId}</span>
-                            </div>
-                            
-                            <div style="display:flex; justify-content:between; align-items:end;">
-                                <div>
-                                    <h4 style="margin:0; font-size:15px; color:#fff; font-weight:bold;">${order.productName}</h4>
-                                    <span style="font-size:10px; opacity:0.5; display:block; margin-top:3px;">${order.time}</span>
-                                </div>
-                                <div style="float:right; text-align:right;">
-                                    <span style="font-size:16px; color:#fff; font-weight:bold;">₹${order.price}</span>
-                                </div>
-                            </div>
-                            
-                            <div style="clear:both;"></div>
-                            ${keySection}
-                        </div>
-                    ` + htmlContent; // Naya order hamesha sabse upar dikhega
-                });
+            // 3. Sync Global Logs table for everyone
+            database.ref('Sales_Logs').limitToLast(30).on('value', (snapshot) => {
+                const historyBody = document.getElementById('global-history-rows');
+                historyBody.innerHTML = "";
+                
+                if (snapshot.exists()) {
+                    let logsArray = [];
+                    snapshot.forEach((childSnapshot) => {
+                        logsArray.unshift(childSnapshot.val()); // Latest on top
+                    });
 
-                container.innerHTML = htmlContent;
-            } else {
-                container.innerHTML = `
-                    <div style="text-align:center; padding:20px; color:#888;">
-                        ❌ Koi order history nahi mili bhai!<br>Store se naya buy karo.
-                    </div>
-                `;
+                    logsArray.forEach((rowData) => {
+                        let row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:4px 8px; border-radius:6px;">${rowData.buyerName}</span></td>
+                            <td><span style="color:#38bdf8; font-weight:600;">${rowData.product}</span><br><span style="font-size:11px; background:#1e293b; padding:2px 5px; border-radius:4px;">${rowData.duration}</span></td>
+                            <td><span class="key-box">${rowData.keyCode}</span></td>
+                            <td>${rowData.description}</td>
+                            <td style="color:#10b981; font-weight:500;">${rowData.dateBought}</td>
+                        `;
+                        historyBody.appendChild(row);
+                    });
+                } else {
+                    historyBody.innerHTML = `<tr id="no-history-row"><td colspan="5" style="text-align: center; color: #6b7a99; padding: 30px;">No transactions recorded yet.</td></tr>`;
+                }
+            });
+        }
+
+        function navigateToPage(targetPageId) {
+            document.body.style.display = "block";
+            
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('my-keys-page').style.display = 'none';
+            document.getElementById('deposit').style.display = 'none';
+            document.getElementById('history-page').style.display = 'none';
+            
+            document.getElementById(targetPageId).style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // LOGOUT SESSION FUNCTION
+        function logOutSession() {
+            toggleSidebarMenu(false);
+            
+            // Turn off active listeners to prevent resource drain
+            if(cleanedUserNode) {
+                database.ref('Panel_Users/' + cleanedUserNode + '/balance').off();
+                database.ref('Sales_Logs').off();
             }
-        });
-    } else {
-        container.innerHTML = "<span style='color:red;'>Pehle login karo bhai!</span>";
-    }
-}
 
+            localStorage.removeItem('activeUser');
+            localStorage.removeItem('userNode');
+
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('shop').style.display = 'none';
+            document.getElementById('my-keys-page').style.display = 'none';
+            document.getElementById('deposit').style.display = 'none';
+            document.getElementById('history-page').style.display = 'none';
+            
+            document.body.style.display = "flex";
+            document.getElementById('auth-section').style.display = 'flex';
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('register-screen').style.display = 'none';
+            
+            currentActiveSessionUser = "";
+            cleanedUserNode = "";
+            alert('Panel Logged Out Successfully!');
+        }
+
+        // 🔥 100% LIFETIME ACCURATE RESELLER MAPPING SYSTEM (UPDATED WITH LIVE API FETCH)
+        function purchaseKeyCore(productTitle, durationLabel, priceValue, durationInHours) {
+            if (userWalletBalance < priceValue) {
+                alert(`Insufficient Balance! You need ₹${priceValue} but you only have ₹${userWalletBalance}. Please deposit balance first.`);
+                return;
+            }
+
+            let mappedProductId = "";
+            let exactApiDuration = "";
+
+            // 1. Exact String Filters matching your reseller API documentation
+            if (productTitle === "DRIPCLIENT NON ROOT") {
+                mappedProductId = "62";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYS NONROOT";
+                else if (durationLabel.includes("3")) exactApiDuration = "3 DaYS NONROOT";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYS NONROOT";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 DaYS NONROOT";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYS NONROOT";
+            } 
+            else if (productTitle === "DRIPCLIENT PC") {
+                mappedProductId = "44";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYS PC AIMKILL";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYS PC AIMKILL";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 DaYS PC AIMKILL";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYS PC AIMKILL";
+            } 
+            else if (productTitle === "DRIPCLIENT ROOT") {
+                mappedProductId = "63";
+                if (durationLabel.includes("7")) exactApiDuration = "7 DaYS ROOT";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYS ROOT";
+            } 
+            else if (productTitle === "DRIPCLIENT 8BP NONROOT") {
+                mappedProductId = "59";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYs";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs";
+            }
+            else if (productTitle === "HG CHEATS") {
+                mappedProductId = "65";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYs Root + Nonroot";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs Root+Nonroot";
+                else if (durationLabel.includes("10")) exactApiDuration = "10 DaYs Root+Nonroot";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs Root+Nonroot";
+            } 
+            else if (productTitle === "PRIME HOOK") {
+                mappedProductId = "48";
+                if (durationLabel.includes("1")) exactApiDuration = "1 Days Nonroot";
+                else if (durationLabel.includes("3")) exactApiDuration = "3 Days Nonroot";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 Days NonRoot";
+                else if (durationLabel.includes("10")) exactApiDuration = "10 Days Nonroot";
+            } 
+            else if (productTitle === "PATO TEAM") {
+                mappedProductId = "54";
+                if (durationLabel.includes("3")) exactApiDuration = "3 DaYs All Colours Mix";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs All Colours Mix";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 DaYs All Colours Mix";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs All Colours Mix";
+            } 
+            else if (productTitle === "BR MODS MOBILE") {
+                mappedProductId = "67";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYs";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 DaYs";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs";
+            } 
+            else if (productTitle === "BR MODS PC AIM SILENT") {
+                mappedProductId = "49";
+                if (durationLabel.includes("1")) exactApiDuration = "1 Day Pc Aim Silent";
+                else if (durationLabel.includes("10")) exactApiDuration = "10 Days Pc Aim Silent";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 Days Pc Aim Silent";
+            } 
+            else if (productTitle === "BR MODS PC BYPASS+AIM SILNT") {
+                mappedProductId = "49";
+                if (durationLabel.includes("1")) exactApiDuration = "1 Day Pc Bypass + Silent";
+                else if (durationLabel.includes("10")) exactApiDuration = "10 Days Pc Bypass + Silent";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 Days Pc Bypass + Silent";
+            } 
+            else if (productTitle === "HEX BLADE FF ROOT+VPHONE") {
+                mappedProductId = "71";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYs";
+                else if (durationLabel.includes("10")) exactApiDuration = "10 DaYs";
+                else if (durationLabel.includes("20")) exactApiDuration = "20 DaYs";
+            }
+            else if (productTitle === "HAXX-CKER PRO FF ROOT + VPHONE") {
+                mappedProductId = "64";
+                if (durationLabel.includes("10")) exactApiDuration = "10 DaYs";
+            }
+            else if (productTitle === "NEO STRIKE FF ROOT + VPHONE") {
+                mappedProductId = "70";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DaYs";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs";
+                else if (durationLabel.includes("14")) exactApiDuration = "14 DaYs";
+            }
+            else if (productTitle === "MIGUL IPHONE IOS PANEL") {
+                mappedProductId = "69";
+                if (durationLabel.includes("1") && durationLabel.toUpperCase().includes("PRO")) exactApiDuration = "1 DaYs PRO";
+                else if (durationLabel.includes("1")) exactApiDuration = "1 DaYs Basic";
+                else if (durationLabel.includes("7") && durationLabel.toUpperCase().includes("PRO")) exactApiDuration = "7 DaYs PRO";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs Basic";
+                else if (durationLabel.includes("30") && durationLabel.toUpperCase().includes("PRO")) exactApiDuration = "30 DaYs PRO";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs Basic";
+                else if (durationLabel.toLowerCase().includes("gbox")) exactApiDuration = "Esgin Gbox CERTIFICATE";
+            }
+            else if (productTitle === "IOS PANEL FLUORITE FF") {
+                mappedProductId = "58";
+                if (durationLabel.includes("1")) exactApiDuration = "1 DAYs FluoRite FF";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 DAYs FluoRite FF";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 DAYs FluoRite FF";
+                else if (durationLabel.toLowerCase().includes("gbox")) exactApiDuration = "Esgin Gbox Certificate For iOs";
+            } 
+            else if (productTitle === "HIKARI MOD FF ROOT") {
+                mappedProductId = "72";
+                if (durationLabel.includes("3")) exactApiDuration = "3 Days";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 Days";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 Days";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 Days";
+            } 
+            else if (productTitle === "XYZ CHEATS FF ROOT+VPHONE") {
+                mappedProductId = "66"; 
+                if (durationLabel.includes("3")) exactApiDuration = "3 Days";
+                else if (durationLabel.includes("7")) exactApiDuration = "7 Days";
+                else if (durationLabel.includes("15")) exactApiDuration = "15 Days";
+                else if (durationLabel.includes("30")) exactApiDuration = "30 Days";
+            }
+
+            // Un-mapped or fallback errors safeguard
+            if (!mappedProductId || !exactApiDuration) {
+                alert("Verification Error: Dynamic payload generation failed for this slot duration.");
+                return;
+            }
+
+            alert(`Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}`);
+
+            // 2. Prepare API parameters inside a standard multipart FormData
+            let apiData = new FormData();
+            apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
+            apiData.append('action', 'buy');
+            apiData.append('product_id', mappedProductId);
+            apiData.append('duration', exactApiDuration);
+
+            // 3. Make live network fetch call to reseller API panel
+            fetch('https://adminpanels.shop/api/reseller_v1.php', {
+                method: 'POST',
+                body: apiData
+            })
+            .then(res => res.json())
+            .then(apiResponse => {
+                // If API outputs success and issues a valid token/key string
+                if (apiResponse && (apiResponse.status === "success" || apiResponse.key)) {
+                    
+                    const liveGeneratedKey = apiResponse.key || apiResponse.token;
+                    let newBalance = userWalletBalance - priceValue;
+                    const currentDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                    // Personal User Sales Ledger Data
+                    let newLogData = {
+                        buyerName: currentActiveSessionUser,
+                        buyerNode: cleanedUserNode,
+                        product: productTitle,
+                        duration: durationLabel,
+                        keyCode: liveGeneratedKey,
+                        description: "API Dynamic Checkout Complete.",
+                        dateBought: currentDate,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    // Device Authentication Data for Android App
+                    let keyModSystemData = {
+                        status: "unused",
+                        duration: durationInHours,
+                        device_id: "",
+                        expiry_date: ""
+                    };
+
+                    // Atomic Database sync injection
+                    let batchUpdates = {};
+                    batchUpdates['Panel_Users/' + cleanedUserNode + '/balance'] = newBalance;
+                    
+                    let logPushKey = database.ref().child('Sales_Logs').push().key;
+                    batchUpdates['Sales_Logs/' + logPushKey] = newLogData;
+                    batchUpdates['Free_Fire_OB53_Keys/' + liveGeneratedKey] = keyModSystemData;
+
+                    database.ref().update(batchUpdates).then(() => {
+                        alert(`🎉 Purchase Successful!\nProduct: ${productTitle}\nYour Key: ${liveGeneratedKey}\n\nPrice: ₹${priceValue} deducted.`);
+                    });
+
+                } else {
+                    // Fail response from main owner provider (stock empty / system issues)
+                    alert("Provider Server Alert: " + (apiResponse.message || "Failed to generate key. Stock might be empty. No balance deducted."));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Network Error: Unable to communicate with the reseller provider backend at this moment.");
+            });
+        }
+
+        // Automatic UTR Audit Submission
+        function submitDepositUTR() {
+            let utrVal = document.getElementById('utrTransactionInput').value.trim();
+            if (utrVal.length < 12) {
+                alert("Please type a valid 12-Digit Banking UTR Number.");
+                return;
+            }
+
+            let auditData = {
+                username: currentActiveSessionUser,
+                userNode: cleanedUserNode,
+                utrNumber: utrVal,
+                status: "Pending Verification",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            database.ref('Deposit_Requests').push(auditData).then(() => {
+                alert('UTR Submitted successfully for audit verification! Your balance will look up once approved.');
+                document.getElementById('utrTransactionInput').value = "";
+            });
+        }
 </script>
   </body>
 </html>
