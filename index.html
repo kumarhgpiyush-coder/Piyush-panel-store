@@ -980,6 +980,7 @@
                 else if (durationLabel.includes("15")) exactApiDuration = "15 DaYS NONROOT";
                 else if (durationLabel.includes("30")) exactApiDuration = "30 DaYS NONROOT";
             } 
+            // Fixed typo logic for other products matching the product reference table
             else if (productTitle === "DRIPCLIENT PC") {
                 mappedProductId = "44";
                 if (durationLabel.includes("1")) exactApiDuration = "1 DaYS PC AIMKILL";
@@ -1062,14 +1063,14 @@
                 else if (durationLabel.includes("7")) exactApiDuration = "7 DaYs Basic";
                 else if (durationLabel.includes("30") && durationLabel.toUpperCase().includes("PRO")) exactApiDuration = "30 DaYs PRO";
                 else if (durationLabel.includes("30")) exactApiDuration = "30 DaYs Basic";
-                else if (durationLabel.toLowerCase().includes("gbox")) exactApiDuration = "Esgin Gbox CERTIFICATE";
+                else if (durationLabel.toLowerCase().includes("certificate") || durationLabel.toLowerCase().includes("gbox")) exactApiDuration = "Esgin Gbox CERTIFICATE";
             }
             else if (productTitle === "IOS PANEL FLUORITE FF") {
                 mappedProductId = "58";
                 if (durationLabel.includes("1")) exactApiDuration = "1 DAYs FluoRite FF";
                 else if (durationLabel.includes("7")) exactApiDuration = "7 DAYs FluoRite FF";
                 else if (durationLabel.includes("30")) exactApiDuration = "30 DAYs FluoRite FF";
-                else if (durationLabel.toLowerCase().includes("gbox")) exactApiDuration = "Esgin Gbox Certificate For iOs";
+                else if (durationLabel.toLowerCase().includes("gbox") || durationLabel.toLowerCase().includes("cert")) exactApiDuration = "Esgin Gbox Certificate For iOs";
             } 
             else if (productTitle === "HIKARI MOD FF ROOT") {
                 mappedProductId = "72";
@@ -1101,21 +1102,31 @@
             apiData.append('product_id', mappedProductId);
             apiData.append('duration', exactApiDuration);
 
-            // Direct live network fetch call to reseller API panel without any broken cors-proxy
-            fetch('https://adminpanels.shop/api/reseller_v1.php',{
+            // Target URL
+            const targetUrl = 'https://adminpanels.shop/api/reseller_v1.php';
+            // Secure Proxy URL to prevent CORS browser block
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+
+            // Execute network request
+            executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours, targetUrl);
+        }
+
+        // Helper function to handle fallback to direct request if proxy fails
+        function executeFetchRequest(url, formData, productTitle, durationLabel, priceValue, durationInHours, originalUrl) {
+            fetch(url, {
                 method: 'POST',
-                body: apiData
+                body: formData
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Network response error');
+                return res.json();
+            })
             .then(apiResponse => {
-                // If API outputs success and issues a valid token/key string
                 if (apiResponse && (apiResponse.status === "success" || apiResponse.key)) {
-                    
                     const liveGeneratedKey = apiResponse.key || apiResponse.token;
                     let newBalance = userWalletBalance - priceValue;
                     const currentDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-                    // Personal User Sales Ledger Data
                     let newLogData = {
                         buyerName: currentActiveSessionUser,
                         buyerNode: cleanedUserNode,
@@ -1127,7 +1138,6 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
 
-                    // Device Authentication Data for Android App
                     let keyModSystemData = {
                         status: "unused",
                         duration: durationInHours,
@@ -1135,7 +1145,6 @@
                         expiry_date: ""
                     };
 
-                    // Atomic Database sync injection
                     let batchUpdates = {};
                     batchUpdates['Panel_Users/' + cleanedUserNode + '/balance'] = newBalance;
                     
@@ -1148,13 +1157,18 @@
                     });
 
                 } else {
-                    // Fail response from main owner provider (stock empty / system issues)
                     alert("Provider Server Alert: " + (apiResponse.message || "Failed to generate key. Stock might be empty. No balance deducted."));
                 }
             })
             .catch(err => {
-                console.error(err);
-                alert("Network Error: Unable to communicate with the reseller provider backend at this moment.");
+                // Fallback loop: If proxy fails, try to make a direct call as last resort
+                if (url !== originalUrl) {
+                    console.log("Proxy failed, trying direct connection...");
+                    executeFetchRequest(originalUrl, formData, productTitle, durationLabel, priceValue, durationInHours, originalUrl);
+                } else {
+                    console.error(err);
+                    alert("Network Error: Unable to communicate with the reseller provider backend due to CORS security block.");
+                }
             });
         }
 
