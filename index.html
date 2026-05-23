@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIYUSH GAMING - ADMIN PANEL</title>
+    <title>PIYUSH GAMING - PANEL STORE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -160,7 +160,7 @@
 		  <div class="logo-box">
 			<img src="logo.png" class="brand-logo-img" alt="Piyush Gaming Logo" onerror="this.src='https://i.ibb.co/6wYgXmX/piyush-logo.png'">
 		  </div>
-		  <h2 class="panel-title" style="font-size: 22px;">ADMIN PANEL</h2>
+		  <h2 class="panel-title" style="font-size: 22px;">PIYUSH GAMING PANEL</h2>
 		  <p class="panel-subtitle" style="margin-bottom: 25px; color: #8fa0bc;">CREATE ACCOUNT</p>
 
 		  <form onsubmit="handleRegistration(event)">
@@ -1102,7 +1102,7 @@
             apiData.append('duration', exactApiDuration);
 
             // 3. Make live network fetch call to reseller API panel
-            fetch('https://adminpanels.shop/api/reseller_v1.php', {
+            fetch('https://cors-anywhere.herokuapp.com/https://adminpanels.shop/api/reseller_v1.php',{
                 method: 'POST',
                 body: apiData
             })
