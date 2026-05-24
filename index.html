@@ -865,7 +865,7 @@
                 if (snapshot.exists()) {
                     showCyberAlert("REGISTRATION ERROR", "Username already registered! Try another one.", "error");
                 } else {
-                    // Create new automatic user profile inside Firebase
+                    // Create nwe automatic user profile inside Firebase
                     let userData = {
                         username: username,
                         email: email,
@@ -1194,26 +1194,34 @@
                     return;
                 }
 
-                let apiData = new FormData();
-                apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
-                apiData.append('action', currentAction); 
-                apiData.append('product_id', mappedProductId);
-                apiData.append('duration', exactApiDuration);
+                // Vercel backend ke liye data structure parameters me change kiya
+                const apiData = {
+                    api_key: 'f678611a6e0afa5b0460468f77da64ab',
+                    action: currentAction,
+                    product_id: mappedProductId,
+                    duration: exactApiDuration
+                };
 
-                const targetUrl = 'https://adminpanels.shop/api/reseller_v1.php';
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+                // 🔥 YAHA APNA VERCEL LINK DALO (Jaise: https://piyush-gaming.vercel.app/api/buy)
+                const proxyUrl = 'https://piyush-panel-store.vercel.app/';
 
-                executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours, targetUrl);
+                executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours);
             };
             
             overlay.classList.add('active');
         }
 
         // Helper function to handle fallback to direct request if proxy fails
-        function executeFetchRequest(url, formData, productTitle, durationLabel, priceValue, durationInHours, originalUrl) {
+        function executeFetchRequest(url, apiData, productTitle, durationLabel, priceValue, durationInHours) {
+            // FormData ko URLSearchParams me badla taaki Vercel server safely read kare
+            const searchParams = new URLSearchParams(apiData);
+
             fetch(url, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: searchParams
             })
             .then(res => {
                 if (!res.ok) throw new Error('Network response error');
@@ -1223,7 +1231,7 @@
                 console.log("Server Response Data:", apiResponse); // Console me status check karne ke liye
 
                 // Check for testing action first
-                if (formData.get('action') === 'balance') {
+                if (apiData.action === 'balance') {
                     showCyberAlert("✅ TEST SUCCESS", `Server Connection OK (No Money Deducted).\nYour Provider Balance: ${apiResponse.balance || JSON.stringify(apiResponse)}`, "success");
                     return;
                 }
@@ -1268,14 +1276,8 @@
                 }
             })
             .catch(err => {
-                // Fallback loop: If proxy fails, try to make a direct call as last resort
-                if (url !== originalUrl) {
-                    console.log("Proxy failed, trying direct connection...");
-                    executeFetchRequest(originalUrl, formData, productTitle, durationLabel, priceValue, durationInHours, originalUrl);
-                } else {
-                    console.error(err);
-                    showCyberAlert("CORS BLOCK", "Network Error: Unable to communicate with the reseller provider backend due to CORS security block.", "error");
-                }
+                console.error(err);
+                showCyberAlert("FETCH ERROR", "Network Error: Unable to communicate with the Vercel backend server. Check your link connection.", "error");
             });
         }
 
