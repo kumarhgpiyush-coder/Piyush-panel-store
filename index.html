@@ -440,8 +440,8 @@
 			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '10 Day', 379, 240)">Buy</button>
 		  </div>
 		  <div class="price-row">
-			<div class="price-left"><span class="price-title">30 Day</span><span class="price-amt">₹749</span></div>
-			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '30 Day', 749, 720)">Buy</button>
+			<div class="price-left"><span class="price-title">3 Day</span><span class="price-amt">₹749</span></div>
+			<button class="btn-buy-slot" onclick="purchaseKeyCore('BR MODS PC BYPASS+AIM SILNT', '3 Day', 749, 720)">Buy</button>
 		  </div>
 		</div>
 	  </div>
@@ -1087,18 +1087,22 @@
                 else if (durationLabel.includes("30")) exactApiDuration = "30 Days";
             }
 
-            // Un-mapped or fallback errors safeguard
             if (!mappedProductId || !exactApiDuration) {
                 alert("Verification Error: Dynamic payload generation failed for this slot duration.");
                 return;
             }
 
-            alert(`Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}`);
+            // --- ⚙️ TESTING OR REAL LIVE SWITCH ⚙️ ---
+            // Free Test ke liye isko 'balance' par rakhein (paisa nahi katega). 
+            // Jab real me key nikalni ho toh 'balance' ko hata kar 'buy' likh dena bas!
+            const currentAction = 'balance'; 
+
+            alert(`Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}\nAction: ${currentAction}`);
 
             // Prepare API parameters inside a standard multipart FormData
             let apiData = new FormData();
             apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
-            apiData.append('action', 'buy');
+            apiData.append('action', currentAction); // Dynamic action apply ho gayi yahan
             apiData.append('product_id', mappedProductId);
             apiData.append('duration', exactApiDuration);
 
@@ -1107,7 +1111,7 @@
             // Secure Proxy URL to prevent CORS browser block
             const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
 
-            // Execute network request
+            // Execute network request (Sirf proxyUrl jayega, double URL nahi hoga ab)
             executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours, targetUrl);
         }
 
@@ -1122,6 +1126,15 @@
                 return res.json();
             })
             .then(apiResponse => {
+                console.log("Server Response Data:", apiResponse); // Console me status check karne ke liye
+
+                // Check for testing action first
+                if (formData.get('action') === 'balance') {
+                    alert(`✅ Test Success (No Money Deducted)!\nServer Connection OK.\nYour Provider Balance: ${apiResponse.balance || JSON.stringify(apiResponse)}`);
+                    return;
+                }
+
+                // If real purchase action 'buy' is active
                 if (apiResponse && (apiResponse.status === "success" || apiResponse.key)) {
                     const liveGeneratedKey = apiResponse.key || apiResponse.token;
                     let newBalance = userWalletBalance - priceValue;
