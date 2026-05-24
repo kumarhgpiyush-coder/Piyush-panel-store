@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIYUSH GAMING - PANEL STORE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght=600;700;900&family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -109,13 +109,44 @@
         .premium-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 750px; }
         .premium-table th { background: #0e172e; padding: 15px; color: #00f2ff; font-family: 'Orbitron', sans-serif; font-size: 11px; border-bottom: 2px solid rgba(0, 242, 255, 0.15); }
         .premium-table td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #b4c2d3; }
-        .key-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed rgba(0, 242, 255, 0.3); color: #00f2ff; padding: 5px 10px; border-radius: 6px; font-family: monospace; }
+        .key-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed rgba(0, 242, 255, 0.3); color: #00f2ff; padding: 5px 10px; border-radius: 6px; font-family: monospace; cursor: pointer; transition: 0.2s; }
+        .key-box:hover { background: rgba(0, 242, 255, 0.15); box-shadow: 0 0 8px rgba(0, 242, 255, 0.3); }
         .btn-back-nav { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,242,255,0.3); color: #00f2ff; padding: 8px 14px; border-radius: 10px; font-family: 'Orbitron', sans-serif; font-size: 11px; cursor: pointer; margin-bottom: 15px; }
+
+        /* ==================== PREMIUM NOTIFICATIONS & MODALS ==================== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .cyber-toast { background: rgba(9, 15, 30, 0.9); border: 1.5px solid #00f2ff; border-radius: 12px; padding: 14px 20px; color: #fff; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(0, 242, 255, 0.2); backdrop-filter: blur(8px); min-width: 280px; transform: translateX(120%); animation: slideInToast 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: auto; }
+        @keyframes slideInToast { to { transform: translateX(0); } }
+        .cyber-toast.fade-out { animation: slideOutToast 0.4s ease forwards; }
+        @keyframes slideOutToast { to { transform: translateX(120%); opacity: 0; } }
+        
+        .cyber-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 8, 20, 0.75); backdrop-filter: blur(6px); z-index: 99999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s ease; }
+        .cyber-modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .cyber-modal { background: #090f1e; border: 2px solid #00f2ff; border-radius: 24px; padding: 30px 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 242, 255, 0.15); transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cyber-modal-overlay.active .cyber-modal { transform: scale(1); }
+        .modal-icon { font-size: 45px; margin-bottom: 15px; color: #00f2ff; text-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 22px; justify-content: center; }
+        .modal-btn-confirm { background: #00e5ff; color: #000; font-weight: 700; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2); }
+        .modal-btn-confirm:hover { background: #00b4cc; transform: translateY(-1px); }
+        .modal-btn-cancel { background: transparent; border: 1.5px solid rgba(255,255,255,0.15); color: #b4c2d3; font-weight: 600; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; }
+        .modal-btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
 </style>
   </head>
   <body>
 
     <div class="bubbles-bg" id="bubblesContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="cyber-modal-overlay" id="cyberModalOverlay">
+      <div class="cyber-modal">
+        <div class="modal-icon" id="modalIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3 id="modalTitle" style="font-family:'Orbitron'; letter-spacing:1px; margin-bottom:8px; font-size:18px;">ALERT</h3>
+        <p id="modalMessage" style="font-size:13px; color:#b4c2d3; line-height:1.5;"></p>
+        <div class="modal-buttons" id="modalButtons">
+          <button class="modal-btn-confirm" id="modalConfirmBtn">OK</button>
+        </div>
+      </div>
+    </div>
 
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebarMenu(false)"></div>
     <div class="sidebar" id="sidebarMenu">
@@ -203,7 +234,7 @@
 		<div class="wallet-balance" id="displayWalletBalance">₹0.00</div>
 	  </div>
 
-	  <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.25); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 20px;">
+	  <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.25); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 200px;">
 		<p style="font-size: 12px; color: #b4c2d3;"><i class="fa-brands fa-telegram" style="color:#0088cc; margin-right:6px;"></i> Join Telegram channel for instant support updates.</p>
 		<a href="https://t.me/MatchMasterMind_Official" target="_blank" style="display:block; background:#0088cc; color:#fff; text-decoration:none; padding:10px; border-radius:10px; font-size:12px; font-weight:600; margin-top:10px;">JOIN NOW</a>
 	  </div>
@@ -707,6 +738,44 @@
         let cleanedUserNode = ""; 
         let userWalletBalance = 0;
 
+        // UI HELPER FUNCTIONS FOR PREMIUM MODALS & TOASTS
+        function showCyberAlert(title, message, type = 'info') {
+            const overlay = document.getElementById('cyberModalOverlay');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            
+            const iconBox = document.getElementById('modalIcon');
+            if(type === 'success') iconBox.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i>';
+            else if(type === 'error') iconBox.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>';
+            else iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#00f2ff;"></i>';
+
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.onclick = function() { overlay.classList.remove('active'); };
+            
+            overlay.classList.add('active');
+        }
+
+        function showCyberToast(message, duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.classList.add('cyber-toast');
+            toast.innerHTML = `<i class="fa-solid fa-bolt" style="color:#00f2ff"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCyberToast("Key copied to clipboard!");
+            }).catch(() => {
+                showCyberToast("Failed to copy key.");
+            });
+        }
+
         // PREMIUM MATRIX BUBBLES GENERATOR
         function buildCyberBubbles() {
             const container = document.getElementById('bubblesContainer');
@@ -779,12 +848,12 @@
             let refCode = document.getElementById('regReferralInput').value.trim();
 
             if (!rawUsername || !email || !pass) {
-                alert("Please fill all required fields.");
+                showCyberAlert("REQUIRED FIELDS", "Please fill all required fields.", "error");
                 return;
             }
 
             if (pass !== confirmPass) {
-                alert("Error: Passwords do not match!");
+                showCyberAlert("PASSWORD ERROR", "Error: Passwords do not match!", "error");
                 return;
             }
 
@@ -794,7 +863,7 @@
             // Check if user already exists
             database.ref('Panel_Users/' + cleanNode).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
-                    alert("Username already registered! Try another one.");
+                    showCyberAlert("REGISTRATION ERROR", "Username already registered! Try another one.", "error");
                 } else {
                     // Create new automatic user profile inside Firebase
                     let userData = {
@@ -807,7 +876,7 @@
                     };
 
                     database.ref('Panel_Users/' + cleanNode).set(userData).then(() => {
-                        alert(`Account Successfully Created! Welcome ${username}`);
+                        showCyberAlert("SUCCESS", `Account Successfully Created! Welcome ${username}`, "success");
                         currentActiveSessionUser = username;
                         cleanedUserNode = cleanNode;
                         localStorage.setItem('activeUser', username);
@@ -816,7 +885,7 @@
                         navigateToPage('dashboard');
                         startRealtimeSync();
                     }).catch(error => {
-                        alert("Database Error: " + error.message);
+                        showCyberAlert("DATABASE ERROR", error.message, "error");
                     });
                 }
             });
@@ -829,7 +898,7 @@
             let pass = document.getElementById('passwordInput').value;
 
             if(!rawUsername || !pass) {
-                alert("Please fill all details.");
+                showCyberAlert("MISSING DETAILS", "Please fill all details.", "error");
                 return;
             }
 
@@ -848,17 +917,18 @@
                         navigateToPage('dashboard');
                         startRealtimeSync();
                     } else {
-                        alert("Error: Incorrect Password!");
+                        showCyberAlert("LOGIN FAILED", "Error: Incorrect Password!", "error");
                     }
                 } else {
-                    alert("Error: Username not found inside server!");
+                    showCyberAlert("LOGIN FAILED", "Error: Username not found inside server!", "error");
                 }
             }).catch(error => {
-                alert("Database Error: " + error.message);
+                showCyberAlert("DATABASE ERROR", error.message, "error");
             });
         }
 
         // Realtime Data Sync System for Balance and Lists
+        let initializedGlobalLogs = false;
         function startRealtimeSync() {
             if (!cleanedUserNode) return;
 
@@ -880,7 +950,7 @@
                         row.innerHTML = `
                             <td><span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:4px 8px; border-radius:6px;">${rowData.buyerName}</span></td>
                             <td><span style="color:#38bdf8; font-weight:600;">${rowData.product}</span><br><span style="font-size:11px; background:#1e293b; padding:2px 5px; border-radius:4px;">${rowData.duration}</span></td>
-                            <td><span class="key-box">${rowData.keyCode}</span></td>
+                            <td><span class="key-box" onclick="copyToClipboard('${rowData.keyCode}')"><i class="fa-regular fa-copy" style="margin-right:5px;"></i>${rowData.keyCode}</span></td>
                             <td>${rowData.description}</td>
                             <td style="color:#10b981; font-weight:500;">${rowData.dateBought}</td>
                         `;
@@ -891,7 +961,7 @@
                 }
             });
 
-            // 3. Sync Global Logs table for everyone
+            // 3. Sync Global Logs table for everyone with Realtime Dynamic Alerts
             database.ref('Sales_Logs').limitToLast(30).on('value', (snapshot) => {
                 const historyBody = document.getElementById('global-history-rows');
                 historyBody.innerHTML = "";
@@ -902,18 +972,28 @@
                         logsArray.unshift(childSnapshot.val()); // Latest on top
                     });
 
+                    // Live Toast Push Optimization
+                    if(initializedGlobalLogs && logsArray.length > 0) {
+                        let latestPurchase = logsArray[0];
+                        if (latestPurchase.buyerName !== currentActiveSessionUser) {
+                            showCyberToast(`🔥 ${latestPurchase.buyerName} purchased ${latestPurchase.product} (${latestPurchase.duration})!`);
+                        }
+                    }
+                    initializedGlobalLogs = true;
+
                     logsArray.forEach((rowData) => {
                         let row = document.createElement('tr');
                         row.innerHTML = `
                             <td><span style="background:rgba(168,85,247,0.15); color:#c084fc; padding:4px 8px; border-radius:6px;">${rowData.buyerName}</span></td>
                             <td><span style="color:#38bdf8; font-weight:600;">${rowData.product}</span><br><span style="font-size:11px; background:#1e293b; padding:2px 5px; border-radius:4px;">${rowData.duration}</span></td>
-                            <td><span class="key-box">${rowData.keyCode}</span></td>
+                            <td><span class="key-box" onclick="copyToClipboard('${rowData.keyCode}')"><i class="fa-regular fa-copy" style="margin-right:5px;"></i>${rowData.keyCode}</span></td>
                             <td>${rowData.description}</td>
                             <td style="color:#10b981; font-weight:500;">${rowData.dateBought}</td>
                         `;
                         historyBody.appendChild(row);
                     });
                 } else {
+                    initializedGlobalLogs = true;
                     historyBody.innerHTML = `<tr id="no-history-row"><td colspan="5" style="text-align: center; color: #6b7a99; padding: 30px;">No transactions recorded yet.</td></tr>`;
                 }
             });
@@ -958,13 +1038,14 @@
             
             currentActiveSessionUser = "";
             cleanedUserNode = "";
-            alert('Panel Logged Out Successfully!');
+            initializedGlobalLogs = false;
+            showCyberAlert("LOGOUT SUCCESS", "Panel Logged Out Successfully!", "success");
         }
 
         // 🔥 100% LIFETIME ACCURATE RESELLER MAPPING SYSTEM (FIXED DIRECT FETCH & MAPPING)
         function purchaseKeyCore(productTitle, durationLabel, priceValue, durationInHours) {
             if (userWalletBalance < priceValue) {
-                alert(`Insufficient Balance! You need ₹${priceValue} but you only have ₹${userWalletBalance}. Please deposit balance first.`);
+                showCyberAlert("INSUFFICIENT BALANCE", `You need ₹${priceValue} but you only have ₹${userWalletBalance}. Please deposit balance first.`, "error");
                 return;
             }
 
@@ -1088,7 +1169,7 @@
             }
 
             if (!mappedProductId || !exactApiDuration) {
-                alert("Verification Error: Dynamic payload generation failed for this slot duration.");
+                showCyberAlert("PAYLOAD ERROR", "Verification Error: Dynamic payload generation failed for this slot duration.", "error");
                 return;
             }
 
@@ -1097,22 +1178,35 @@
             // Jab real me key nikalni ho toh 'balance' ko hata kar 'buy' likh dena bas!
             const currentAction = 'balance'; 
 
-            alert(`Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}\nAction: ${currentAction}`);
+            // Intercept with premium Custom Overlay Confirmation
+            const overlay = document.getElementById('cyberModalOverlay');
+            document.getElementById('modalTitle').innerText = "PROVIDER HUB GATEWAY";
+            document.getElementById('modalMessage').innerText = `Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}\nAction: ${currentAction}`;
+            document.getElementById('modalIcon').innerHTML = '<i class="fa-solid fa-circle-nodes" style="color:#00f2ff;"></i>';
+            
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            confirmBtn.onclick = function() {
+                overlay.classList.remove('active');
+                
+                // Extra security check right before checkout
+                if (userWalletBalance < priceValue) {
+                    showCyberAlert("CHECKOUT ABORTED", "Insufficient balance verification step failed.", "error");
+                    return;
+                }
 
-            // Prepare API parameters inside a standard multipart FormData
-            let apiData = new FormData();
-            apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
-            apiData.append('action', currentAction); // Dynamic action apply ho gayi yahan
-            apiData.append('product_id', mappedProductId);
-            apiData.append('duration', exactApiDuration);
+                let apiData = new FormData();
+                apiData.append('api_key', 'f678611a6e0afa5b0460468f77da64ab');
+                apiData.append('action', currentAction); 
+                apiData.append('product_id', mappedProductId);
+                apiData.append('duration', exactApiDuration);
 
-            // Target URL
-            const targetUrl = 'https://adminpanels.shop/api/reseller_v1.php';
-            // Secure Proxy URL to prevent CORS browser block
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+                const targetUrl = 'https://adminpanels.shop/api/reseller_v1.php';
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
 
-            // Execute network request (Sirf proxyUrl jayega, double URL nahi hoga ab)
-            executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours, targetUrl);
+                executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours, targetUrl);
+            };
+            
+            overlay.classList.add('active');
         }
 
         // Helper function to handle fallback to direct request if proxy fails
@@ -1130,7 +1224,7 @@
 
                 // Check for testing action first
                 if (formData.get('action') === 'balance') {
-                    alert(`✅ Test Success (No Money Deducted)!\nServer Connection OK.\nYour Provider Balance: ${apiResponse.balance || JSON.stringify(apiResponse)}`);
+                    showCyberAlert("✅ TEST SUCCESS", `Server Connection OK (No Money Deducted).\nYour Provider Balance: ${apiResponse.balance || JSON.stringify(apiResponse)}`, "success");
                     return;
                 }
 
@@ -1166,11 +1260,11 @@
                     batchUpdates['Free_Fire_OB53_Keys/' + liveGeneratedKey] = keyModSystemData;
 
                     database.ref().update(batchUpdates).then(() => {
-                        alert(`🎉 Purchase Successful!\nProduct: ${productTitle}\nYour Key: ${liveGeneratedKey}\n\nPrice: ₹${priceValue} deducted.`);
+                        showCyberAlert("🎉 PURCHASE SUCCESSFUL", `Product: ${productTitle}\nYour Key: ${liveGeneratedKey}\n\nPrice: ₹${priceValue} deducted successfully.`, "success");
                     });
 
                 } else {
-                    alert("Provider Server Alert: " + (apiResponse.message || "Failed to generate key. Stock might be empty. No balance deducted."));
+                    showCyberAlert("STOCK ALERT", (apiResponse.message || "Failed to generate key. Stock might be empty. No balance deducted."), "error");
                 }
             })
             .catch(err => {
@@ -1180,7 +1274,7 @@
                     executeFetchRequest(originalUrl, formData, productTitle, durationLabel, priceValue, durationInHours, originalUrl);
                 } else {
                     console.error(err);
-                    alert("Network Error: Unable to communicate with the reseller provider backend due to CORS security block.");
+                    showCyberAlert("CORS BLOCK", "Network Error: Unable to communicate with the reseller provider backend due to CORS security block.", "error");
                 }
             });
         }
@@ -1189,7 +1283,7 @@
         function submitDepositUTR() {
             let utrVal = document.getElementById('utrTransactionInput').value.trim();
             if (utrVal.length < 12) {
-                alert("Please type a valid 12-Digit Banking UTR Number.");
+                showCyberAlert("UTR FORMAT ERROR", "Please type a valid 12-Digit Banking UTR Number.", "error");
                 return;
             }
 
@@ -1202,7 +1296,7 @@
             };
 
             database.ref('Deposit_Requests').push(auditData).then(() => {
-                alert('UTR Submitted successfully for audit verification! Your balance will look up once approved.');
+                showCyberAlert("SUBMITTED", 'UTR Submitted successfully for audit verification! Your balance will look up once approved.', "success");
                 document.getElementById('utrTransactionInput').value = "";
             });
         }
