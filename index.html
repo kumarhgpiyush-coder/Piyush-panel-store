@@ -717,7 +717,7 @@
 
 <script>
         // =================================================================
-        // 🔥 STEP 1: APNE FIREBASE PROJECT KI CONFIGURATION YAHA PASTE KARO
+        // 🔥 STEP 1: FIREBASE PROJECT CONFIGURATION
         // =================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCL7gAZylC8N9lF9zI8ldGz1WzLG5oLp4Y",
@@ -779,6 +779,7 @@
         // PREMIUM MATRIX BUBBLES GENERATOR
         function buildCyberBubbles() {
             const container = document.getElementById('bubblesContainer');
+            if (!container) return;
             container.innerHTML = ""; 
             const totalBubbles = 15;
             for (let i = 0; i < totalBubbles; i++) {
@@ -860,16 +861,14 @@
             let username = rawUsername.startsWith('@') ? rawUsername : '@' + rawUsername;
             let cleanNode = username.replace(/[.#$/\[\]]/g, "_"); // Firebase key protection
 
-            // Check if user already exists
             database.ref('Panel_Users/' + cleanNode).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     showCyberAlert("REGISTRATION ERROR", "Username already registered! Try another one.", "error");
                 } else {
-                    // Create nwe automatic user profile inside Firebase
                     let userData = {
                         username: username,
                         email: email,
-                        password: pass, // In clear text as per simple web logic
+                        password: pass,
                         balance: 0,
                         referral: refCode,
                         joinedDate: new Date().toISOString()
@@ -932,16 +931,15 @@
         function startRealtimeSync() {
             if (!cleanedUserNode) return;
 
-            // 1. Sync current balance automatically
             database.ref('Panel_Users/' + cleanedUserNode + '/balance').on('value', (snapshot) => {
                 userWalletBalance = snapshot.val() || 0;
                 document.getElementById('displayWalletBalance').innerText = "₹" + Number(userWalletBalance).toFixed(2);
             });
 
-            // 2. Sync Personal Keys purchased
             database.ref('Sales_Logs').orderByChild('buyerNode').equalTo(cleanedUserNode).on('value', (snapshot) => {
                 const myKeysBody = document.getElementById('sales-logs-rows');
-                myKeysBody.innerHTML = ""; // reset UI table
+                if(!myKeysBody) return;
+                myKeysBody.innerHTML = "";
                 
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
@@ -961,18 +959,17 @@
                 }
             });
 
-            // 3. Sync Global Logs table for everyone with Realtime Dynamic Alerts
             database.ref('Sales_Logs').limitToLast(30).on('value', (snapshot) => {
                 const historyBody = document.getElementById('global-history-rows');
+                if(!historyBody) return;
                 historyBody.innerHTML = "";
                 
                 if (snapshot.exists()) {
                     let logsArray = [];
                     snapshot.forEach((childSnapshot) => {
-                        logsArray.unshift(childSnapshot.val()); // Latest on top
+                        logsArray.unshift(childSnapshot.val());
                     });
 
-                    // Live Toast Push Optimization
                     if(initializedGlobalLogs && logsArray.length > 0) {
                         let latestPurchase = logsArray[0];
                         if (latestPurchase.buyerName !== currentActiveSessionUser) {
@@ -1012,11 +1009,8 @@
             window.scrollTo(0, 0);
         }
 
-        // LOGOUT SESSION FUNCTION
         function logOutSession() {
             toggleSidebarMenu(false);
-            
-            // Turn off active listeners to prevent resource drain
             if(cleanedUserNode) {
                 database.ref('Panel_Users/' + cleanedUserNode + '/balance').off();
                 database.ref('Sales_Logs').off();
@@ -1042,7 +1036,6 @@
             showCyberAlert("LOGOUT SUCCESS", "Panel Logged Out Successfully!", "success");
         }
 
-        // 🔥 100% LIFETIME ACCURATE RESELLER MAPPING SYSTEM (FIXED DIRECT FETCH & MAPPING)
         function purchaseKeyCore(productTitle, durationLabel, priceValue, durationInHours) {
             if (userWalletBalance < priceValue) {
                 showCyberAlert("INSUFFICIENT BALANCE", `You need ₹${priceValue} but you only have ₹${userWalletBalance}. Please deposit balance first.`, "error");
@@ -1052,7 +1045,6 @@
             let mappedProductId = "";
             let exactApiDuration = "";
 
-            // Live Reseller API Mapping System (Exact match with Provider Live Data strings)
             if (productTitle === "DRIPCLIENT NON ROOT") {
                 mappedProductId = "62";
                 if (durationLabel.includes("1")) exactApiDuration = "1 DaYS NONROOT";
@@ -1061,7 +1053,6 @@
                 else if (durationLabel.includes("15")) exactApiDuration = "15 DaYS NONROOT";
                 else if (durationLabel.includes("30")) exactApiDuration = "30 DaYS NONROOT";
             } 
-            // Fixed typo logic for other products matching the product reference table
             else if (productTitle === "DRIPCLIENT PC") {
                 mappedProductId = "44";
                 if (durationLabel.includes("1")) exactApiDuration = "1 DaYS PC AIMKILL";
@@ -1178,7 +1169,6 @@
             // Jab real me key nikalni ho toh 'balance' ko hata kar 'buy' likh dena bas!
             const currentAction = 'balance'; 
 
-            // Intercept with premium Custom Overlay Confirmation
             const overlay = document.getElementById('cyberModalOverlay');
             document.getElementById('modalTitle').innerText = "PROVIDER HUB GATEWAY";
             document.getElementById('modalMessage').innerText = `Connecting safely with provider server...\nProduct ID: ${mappedProductId}\nDuration: ${exactApiDuration}\nAction: ${currentAction}`;
@@ -1188,13 +1178,11 @@
             confirmBtn.onclick = function() {
                 overlay.classList.remove('active');
                 
-                // Extra security check right before checkout
                 if (userWalletBalance < priceValue) {
                     showCyberAlert("CHECKOUT ABORTED", "Insufficient balance verification step failed.", "error");
                     return;
                 }
 
-                // Vercel backend ke liye data structure parameters me change kiya
                 const apiData = {
                     api_key: 'f678611a6e0afa5b0460468f77da64ab',
                     action: currentAction,
@@ -1202,9 +1190,8 @@
                     duration: exactApiDuration
                 };
 
-                // 🔥 YAHA APNA VERCEL LINK DALO (Jaise: https://piyush-gaming.vercel.app/api/buy)
-                const proxyUrl = 'https://piyush-panel-store.vercel.app/api/buy';
-
+                // Sirf '/api/buy' rakhne se Vercel automatic sahi routing pakad lega
+                const proxyUrl = '/api/buy';
 
                 executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue, durationInHours);
             };
@@ -1212,51 +1199,29 @@
             overlay.classList.add('active');
         }
 
-        // Helper function to handle fallback to direct request if proxy fails
+        // Cleaned up and single fixed executeFetchRequest function
         function executeFetchRequest(url, apiData, productTitle, durationLabel, priceValue, durationInHours) {
-            // FormData ko URLSearchParams me badla taaki Vercel server safely read kare
             const searchParams = new URLSearchParams(apiData);
 
-            // 1. Sahi URL yahan set karo (Sirf '/api/buy' rakhne se Vercel khud apna sahi domain pakad lega)
-const proxyUrl = '/api/buy';
-
-// 2. Ab function ko call karo
-executeFetchRequest(proxyUrl, apiData, productTitle, durationLabel, priceValue);
-
-// 3. Yeh hai tumhara complete aur sahi fetch function (Jo galti se delete ho gaya tha)
-function executeFetchRequest(url, apiData, productTitle, durationLabel, priceValue) {
-    const searchParams = new URLSearchParams(apiData);
-
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: searchParams
-    })
-    .then(res => {
-        if (!res.ok) throw new Error('Network response error');
-        return res.json();
-    })
-    .then(apiResponse => {
-        console.log("Server Response Data:", apiResponse);
-        
-        // Agar action 'balance' check karne ka hai
-        if (apiData.action === 'balance') {
-            showCyberAlert("✅ TEST SUCCESS", "Server Connection OK");
-            return;
-        }
-        
-        // Aage ka baki buy logic...
-    })
-    .catch(err => {
-        console.error(err);
-        showCyberAlert("❌ FETCH ERROR", "Network Error: Unable to communicate with server.");
-    });
-}
-
-
-                // If real purchase action 'buy' is active
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: searchParams
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Network response error');
+                return res.json();
+            })
+            .then(apiResponse => {
+                console.log("Server Response Data:", apiResponse);
+                
+                if (apiData.action === 'balance') {
+                    showCyberAlert("✅ TEST SUCCESS", "Server Connection OK\nResponse: " + JSON.stringify(apiResponse));
+                    return;
+                }
+                
                 if (apiResponse && (apiResponse.status === "success" || apiResponse.key)) {
                     const liveGeneratedKey = apiResponse.key || apiResponse.token;
                     let newBalance = userWalletBalance - priceValue;
@@ -1297,7 +1262,7 @@ function executeFetchRequest(url, apiData, productTitle, durationLabel, priceVal
             })
             .catch(err => {
                 console.error(err);
-                showCyberAlert("FETCH ERROR", "Network Error: Unable to communicate with the Vercel backend server. Check your link connection.", "error");
+                showCyberAlert("❌ FETCH ERROR", "Network Error: Unable to communicate with server.", "error");
             });
         }
 
